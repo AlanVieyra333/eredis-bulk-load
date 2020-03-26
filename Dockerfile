@@ -3,6 +3,7 @@ FROM shuppet/eredis:latest as EREDIS
 #FROM registry.redhat.io/rhel-atomic
 #FROM alpine:3.9
 FROM debian:stretch
+LABEL maintainer="Alan Fernando Rincón Vieyra <alan.rincon@mail.telcel.com>"
 
 COPY --from=EREDIS /usr/local/lib/liberedis.so /usr/local/lib/liberedis.so
 
