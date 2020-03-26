@@ -19,7 +19,7 @@ ADD ./redis_load_from_file.o ./redis_load_from_file
 ENV FILENAME=R09_80000000.txt
 ENV REDIS_HOST=redis
 ENV REDIS_PORT=6379
-ENV REDIS_PASS=TeLcEl
+ENV REDIS_PASS=changeme
 
 VOLUME [ "/data" ]
 
