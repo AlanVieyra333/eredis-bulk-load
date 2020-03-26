@@ -1,3 +1,11 @@
+/**
+ * Programa para crear 50 millones de registros en Redis.
+ * Tiempo tardado aproximadamente: 2 min. con 4.063 seg.
+ * 
+ * @date 25/03/2020
+ * @author Alan Fernando Rincón Vieyra <alan.rincon@mail.telcel.com>
+*/
+
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,22 +17,11 @@ static eredis_t *e;
 
 int main(int argc, char *argv[])
 {
-    /* optional command line arguments */
-    const char *host_file = "hosts.conf";
-    if (argc >= 2)
-    {
-        host_file = argv[1];
-    }
-
     /* eredis */
     e = eredis_new();
 
     /* conf */
-    if (eredis_host_file(e, host_file) <= 0)
-    {
-        fprintf(stderr, "Unable to load conf %s\n", host_file);
-        exit(1);
-    }
+    eredis_host_add( e, "localhost", 6379);
 
     eredis_pc_cmd(e, "AUTH %s", "TeLcEl");
 

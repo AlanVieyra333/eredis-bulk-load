@@ -8,11 +8,8 @@
 
 #include<stdio.h>
 #include<stdlib.h>
-#include<thread>
 
 #define MAXCHAR 300
-
-using namespace std;
 
 char line[MAXCHAR];
 
@@ -26,9 +23,6 @@ int main() {
         
         /* Cargar a Redis */
     }
-
-    
-
 
     fclose(file);
 
