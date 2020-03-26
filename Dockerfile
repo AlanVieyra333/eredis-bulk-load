@@ -7,14 +7,23 @@ LABEL maintainer="Alan Fernando Rincón Vieyra <alan.rincon@mail.telcel.com>"
 
 COPY --from=EREDIS /usr/local/lib/liberedis.so /usr/local/lib/liberedis.so
 
-RUN apt-get update; \
+RUN set -ex; \
+	\
+	savedAptMark="$(apt-mark showmanual)"; \
+	\
+	apt-get update; \
 	apt-get install -y --no-install-recommends \
-		build-essential \
-		libev-dev
+		libev-dev \
+	; \
+	\
+	apt-mark auto '.*' > /dev/null; \
+	apt-mark manual $savedAptMark; \
+	apt-get purge -y; \
+	rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-ADD ./redis_load_from_file.o ./redis_load_from_file
+ADD ./redis_load_from_file .
 
 ENV FILENAME=R09_80000000.txt
 ENV REDIS_HOST=redis
