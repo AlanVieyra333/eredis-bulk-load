@@ -10,21 +10,21 @@ REDIS_PASS=TeLcEl
 
 .PHONY: build run clear generate
 
-build: redis_load_from_file redis_data_load.o redis_example.o
+build: redis_load_from_file redis_data_load.o redis_example.o generate_file
 	@echo "Compilado."
 
 run: redis_load_from_file
 	./redis_load_from_file ${FILENAME} ${REDIS_HOST} ${REDIS_PORT} ${REDIS_PASS}
 
-generate: generate.o
-	./generate.o 30000000
+generate: generate_file
+	./generate_file 30000000
 
 redis_load_from_file: redis_load_from_file.cpp
 	g++ -std=c++17 -Wall -pedantic redis_load_from_file.cpp -o redis_load_from_file -O2 -lstdc++fs -leredis
 #gcc -o redis_load_from_file.o redis_load_from_file.c -O2 -leredis
 
-generate.o: generate.c
-	gcc -o generate.o generate.c -O2
+generate_file: generate_file.c
+	gcc -o generate_file generate_file.c -O2
 
 redis_data_load.o: redis_data_load.c
 	gcc -o redis_data_load.o redis_data_load.c -O2
