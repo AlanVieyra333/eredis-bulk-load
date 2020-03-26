@@ -14,7 +14,7 @@ RUN apt-get update; \
 
 WORKDIR /app
 
-ADD ./redis_load_from_file.o ./redis_load_from_file
+ADD ./redis_load_from_file .
 
 ENV FILENAME=R09_80000000.txt
 ENV REDIS_HOST=redis
