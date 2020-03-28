@@ -99,7 +99,7 @@ void redis_set(char *key, char *value)
     else
         ++redis_set_count;
 
-    if (redis_set_count % 100000 == 0)
+    if (redis_set_count % 20000 == 0)
     {
         /* Let some time to process... normal run... yield a bit... push more write... etc.. */
         while (eredis_w_pending(e) > 0)
