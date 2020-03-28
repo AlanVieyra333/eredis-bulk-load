@@ -14,6 +14,7 @@
 
 #include <eredis.h>
 #include "FileWatcher.h"
+#include "log.h"
 
 #define MAXCHAR 300
 
@@ -29,7 +30,7 @@ void sigint_handler(int sig_no)
 {
     (void)sig_no;
 
-    printf("CTRL-C pressed\n");
+    log_(L_INFO | L_CONS, "CTRL-C pressed\n");
     sigaction(SIGINT, &old_action, NULL);
     if (e)
     {
@@ -66,18 +67,22 @@ int redis_init()
     eredis_reader_t *reader = eredis_r(e);
 
     reply = eredis_r_cmd(reader, "PING");
-    //printf("PING: %s\n", reply->str);
+    //log_(L_INFO | L_CONS, "PING: %s\n", reply->str);
 
     /* Release the reader */
     eredis_r_release(reader);
 
     if (reply != NULL && strcmp(reply->str, "PONG") == 0)
     {
+        log_(L_INFO | L_CONS, "Conexion establecida con el servidor Redis.\n");
+
         status = 0;
 
         /* run thread */
         eredis_run_thr(e);
-    } else {
+    }
+    else
+    {
         eredis_free(e);
     }
 
@@ -86,7 +91,7 @@ int redis_init()
 
 void redis_set(char *key, char *value)
 {
-    //printf("Clave: %s Valor: %s\n", key, value);
+    //log_(L_INFO | L_CONS, "Clave: %s Valor: %s\n", key, value);
 
     if (eredis_w_cmd(e, "SET %s %s", key, value) != EREDIS_OK)
         ++redis_cmd_fail;
@@ -104,7 +109,7 @@ void redis_set(char *key, char *value)
 
     if (redis_set_count % 10000000 == 0)
     {
-        printf("Registros cargados: %d\n", redis_set_count);
+        log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
     }
 }
 
@@ -112,10 +117,10 @@ void redis_close()
 {
     if (redis_cmd_fail > 0)
     {
-        fprintf(stderr, "Error con eredis_w_cmd %dx\n", redis_cmd_fail);
+        log_(L_WARN, "Error con eredis_w_cmd %dx\n", redis_cmd_fail);
     }
 
-    printf("Cerrando conexión...\n");
+    log_(L_INFO | L_CONS, "Cerrando conexion...\n");
     /* Let some time to process... normal run... yield a bit... push more write... etc.. */
     while (eredis_w_pending(e) > 0)
     {
@@ -125,19 +130,15 @@ void redis_close()
     eredis_free(e);
 }
 
-void load_from_file()
+void load_from_file(FILE *file)
 {
-    FILE *file = fopen(filename, "r");
     char line[MAXCHAR];
     char phone[11];
 
     if (file == NULL)
-    {
-        fprintf(stderr, "No fue posible abrir el archivo: %s\n", filename);
         return;
-    }
 
-    printf("Cargando registros de %s...\n", filename);
+    log_(L_INFO | L_CONS, "Cargando registros de %s...\n", filename);
 
     while (fgets(line, MAXCHAR, file) != NULL)
     {
@@ -153,24 +154,33 @@ void load_from_file()
         redis_set(phone, line);
     }
 
-    printf("Carga completa.\n");
-
-    fclose(file);
+    log_(L_INFO | L_CONS, "Carga completa.\n");
 }
 
 void load_data()
 {
-    if (redis_init() == 0)
+    FILE *file = fopen(filename, "r");
+
+    if (file != NULL)
     {
-        load_from_file();
-        redis_close();
-    }
-    else
-    {
-        printf("Sin conexion con el servidor Redis.\n");
+        if (redis_init() == 0)
+        {
+            load_from_file(file);
+            redis_close();
+        }
+        else
+        {
+            log_(L_INFO | L_CONS, "Sin conexion con el servidor Redis.\n");
+        }
+
+        fclose(file);
+
+        log_(L_INFO | L_CONS, "Escuchando cambios en el archivo.\n");
+    } else {
+        log_(L_INFO | L_CONS, "Esperando a la creacion del archivo: %s\n", filename);
     }
 
-    printf("\nEscuchando cambios en el archivo...\n");
+    log_(L_INFO | L_CONS, "...\n");
 }
 
 void file_watcher()
@@ -193,7 +203,7 @@ void file_watcher()
         case FileStatus::modified:
             if (strcmp(path_to_watch.c_str() + 2, filename) == 0)
             {
-                printf("Archivo creado/modificado: %s\n", path_to_watch.c_str());
+                log_(L_INFO | L_CONS, "Archivo creado/modificado: %s\n", path_to_watch.c_str());
                 load_data();
             }
             break;
@@ -203,11 +213,29 @@ void file_watcher()
     });
 }
 
+void log_init()
+{
+    LOG_CONFIG c = {
+        9,
+        LOG_DEST_FILES,
+        "log/redis_load_from_file.log",
+        "redis_load_from_file",
+        0,
+        1};
+    log_set_config(&c);
+}
+
 int main(int argc, char *argv[])
 {
+    fprintf(stderr, "###################\n");
+    fprintf(stderr, "# Redis bulk load #\n");
+    fprintf(stderr, "###################\n\n");
+
+    log_init();
+
     if (argc != 5)
     {
-        fprintf(stderr, "./app.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> <REDIS_PASS>\n");
+        log_(L_WARN, "./app.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> <REDIS_PASS>\n");
         exit(1);
     }
 
@@ -217,6 +245,8 @@ int main(int argc, char *argv[])
     redis_pass = argv[4];
 
     signal_conf();
+
+    log_(L_INFO | L_CONS, "Inicializado correctamente.\n");
 
     load_data();
     file_watcher();

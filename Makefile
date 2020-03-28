@@ -19,9 +19,12 @@ run: redis_load_from_file
 generate: generate_file.o
 	./generate_file.o 80000000
 
-redis_load_from_file: redis_load_from_file.cpp
-	g++ -std=c++17 -Wall -pedantic redis_load_from_file.cpp -o redis_load_from_file -O2 -lstdc++fs -leredis
+redis_load_from_file: redis_load_from_file.cpp log.o
+	g++ -std=c++17 -Wall -pedantic redis_load_from_file.cpp log.o -o redis_load_from_file -O2 -lstdc++fs -leredis
 #gcc -o redis_load_from_file.o redis_load_from_file.c -O2 -leredis
+
+log.o: log.c
+	gcc log.c -o log.o -c
 
 generate_file.o: generate_file.c
 	gcc -o generate_file.o generate_file.c -O2

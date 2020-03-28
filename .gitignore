@@ -2,3 +2,4 @@
 *.txt
 *.rpm
 *.tar.gz
+log/
