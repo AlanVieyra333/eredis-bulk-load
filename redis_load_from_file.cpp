@@ -218,7 +218,7 @@ void log_init()
     LOG_CONFIG c = {
         9,
         LOG_DEST_FILES,
-        "log/redis_load_from_file.log",
+        "/data/log/redis_load_from_file.log",
         "redis_load_from_file",
         0,
         1};
