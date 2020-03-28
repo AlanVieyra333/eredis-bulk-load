@@ -19,6 +19,7 @@
 #define MAXCHAR 300
 
 char *filename, *redis_host, *redis_pass;
+char *workdir = "/data";
 int redis_port;
 static eredis_t *e;
 int redis_set_count = 0;
@@ -175,7 +176,7 @@ void load_data()
 
         fclose(file);
 
-        log_(L_INFO | L_CONS, "Escuchando cambios en el archivo.\n");
+        log_(L_INFO | L_CONS, "Escuchando cambios en el archivo: %s\n", filename);
     } else {
         log_(L_INFO | L_CONS, "Esperando a la creacion del archivo: %s\n", filename);
     }
@@ -186,7 +187,7 @@ void load_data()
 void file_watcher()
 {
     // Create a FileWatcher instance that will check the current folder for changes every 5 seconds
-    FileWatcher fw{"./", std::chrono::milliseconds(1000)};
+    FileWatcher fw{workdir, std::chrono::milliseconds(1000)};
 
     // Start monitoring a folder for changes and (in case of changes)
     // run a user provided lambda function
@@ -201,7 +202,7 @@ void file_watcher()
         {
         case FileStatus::created:
         case FileStatus::modified:
-            if (strcmp(path_to_watch.c_str() + 2, filename) == 0)
+            if (strcmp(path_to_watch.c_str(), filename) == 0)
             {
                 log_(L_INFO | L_CONS, "Archivo creado/modificado: %s\n", path_to_watch.c_str());
                 load_data();
@@ -215,10 +216,14 @@ void file_watcher()
 
 void log_init()
 {
+    char logFilename[MAXCHAR];
+    strcpy(logFilename, workdir);
+    strcat(logFilename, "/log/redis_load_from_file.log");
+
     LOG_CONFIG c = {
         9,
         LOG_DEST_FILES,
-        "/data/log/redis_load_from_file.log",
+        logFilename,
         "redis_load_from_file",
         0,
         1};
