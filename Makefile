@@ -13,13 +13,13 @@ REDIS_PASS=TeLcEl
 build: redis_load_from_file redis_data_load.o redis_example.o generate_file.o
 	@echo "Compilado."
 
-run: redis_load_from_file
+run: redis_load_from_file.o
 	./redis_load_from_file ${FILENAME} ${REDIS_HOST} ${REDIS_PORT} ${REDIS_PASS}
 
 generate: generate_file.o
 	./generate_file.o 80000000
 
-redis_load_from_file: redis_load_from_file.cpp log.o
+redis_load_from_file.o: redis_load_from_file.cpp log.o
 	g++ -std=c++17 -Wall -pedantic redis_load_from_file.cpp log.o -o redis_load_from_file -O2 -lstdc++fs -leredis
 #gcc -o redis_load_from_file.o redis_load_from_file.c -O2 -leredis
 
