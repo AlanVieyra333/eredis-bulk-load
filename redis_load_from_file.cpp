@@ -1,8 +1,8 @@
 /**
- * Programa para leer 80 millones de registros de un archivo txt.
- * Tiempo tardado aproximadamente: 24.814 seg.
+ * Programa para leer registros de un archivo txt y agregarlos en un servidor Redis.
+ * Tiempo tardado en cargar 30000000 aproximadamente: 5 min.
  * 
- * @date 23/03/2020
+ * @date 26/03/2020
  * @author Alan Fernando Rincón Vieyra <alan.rincon@mail.telcel.com>
 */
 
