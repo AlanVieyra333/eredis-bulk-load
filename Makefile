@@ -4,7 +4,7 @@
 # docker-compose stop redis-ephemeral
 # redis-cli -h localhost -a TeLcEl GET 5516409291
 
-FILENAME=R09_80000000.txt
+FILENAME=R09.txt
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASS=TeLcEl
@@ -18,7 +18,7 @@ run: redis_load_from_file.o
 	./redis_load_from_file ${FILENAME} ${REDIS_HOST} ${REDIS_PORT} ${REDIS_PASS}
 
 generate: ./test/generate_file.o
-	./test/generate_file.o 10000000
+	./test/generate_file.o 20000000
 
 redis_load_from_file.o: redis_load_from_file.cpp log.o
 	g++ -std=c++17 -Wall -pedantic redis_load_from_file.cpp log.o -o redis_load_from_file -O2 -lstdc++fs -leredis
