@@ -75,7 +75,7 @@ int redis_init()
 
     if (reply != NULL && strcmp(reply->str, "PONG") == 0)
     {
-        log_(L_INFO | L_CONS, "Conexion establecida con el servidor Redis.\n");
+        // log_(L_INFO | L_CONS, "Conexion establecida con el servidor Redis.\n");
 
         status = 0;
 
@@ -84,34 +84,11 @@ int redis_init()
     }
     else
     {
+        log_(L_INFO | L_CONS, "Sin conexion con el servidor Redis.\n");
         eredis_free(e);
     }
 
     return status;
-}
-
-void redis_set(char *key, char *value)
-{
-    //log_(L_INFO | L_CONS, "Clave: %s Valor: %s\n", key, value);
-
-    if (eredis_w_cmd(e, "SET %s %s", key, value) != EREDIS_OK)
-        ++redis_cmd_fail;
-    else
-        ++redis_set_count;
-
-    if (redis_set_count % 20000 == 0)
-    {
-        /* Let some time to process... normal run... yield a bit... push more write... etc.. */
-        while (eredis_w_pending(e) > 0)
-        {
-            usleep(10);
-        }
-    }
-
-    if (redis_set_count % 10000000 == 0)
-    {
-        log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
-    }
 }
 
 void redis_close()
@@ -121,7 +98,7 @@ void redis_close()
         log_(L_WARN, "Error con eredis_w_cmd %dx\n", redis_cmd_fail);
     }
 
-    log_(L_INFO | L_CONS, "Cerrando conexion...\n");
+    //log_(L_INFO | L_CONS, "Cerrando conexion...\n");
     /* Let some time to process... normal run... yield a bit... push more write... etc.. */
     while (eredis_w_pending(e) > 0)
     {
@@ -129,6 +106,38 @@ void redis_close()
     }
 
     eredis_free(e);
+}
+
+void redis_set(char *key, char *value)
+{
+    if (!e)
+    {
+        if (redis_init() != 0)
+        {
+            return;
+        }
+    }
+
+    if (eredis_w_cmd(e, "SET %s %s", key, value) != EREDIS_OK)
+        ++redis_cmd_fail;
+    else
+        ++redis_set_count;
+
+    if (redis_set_count % 10000 == 0)
+    {
+        /* Let some time to process... normal run... yield a bit... push more write... etc.. */
+        while (eredis_w_pending(e) > 0)
+        {
+            usleep(75000);
+        }
+    }
+
+    if (redis_set_count % 10000000 == 0)
+    {
+        log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
+        redis_close();
+        sleep(5);
+    }
 }
 
 void load_from_file(FILE *file)
@@ -156,6 +165,7 @@ void load_from_file(FILE *file)
     }
 
     log_(L_INFO | L_CONS, "Carga completa.\n");
+    redis_close();
 }
 
 void load_data()
@@ -164,15 +174,7 @@ void load_data()
 
     if (file != NULL)
     {
-        if (redis_init() == 0)
-        {
-            load_from_file(file);
-            redis_close();
-        }
-        else
-        {
-            log_(L_INFO | L_CONS, "Sin conexion con el servidor Redis.\n");
-        }
+        load_from_file(file);
 
         fclose(file);
 

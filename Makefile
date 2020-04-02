@@ -1,6 +1,6 @@
 # Test Redis
-# docker run -it -d --name redis-ephemeral --rm -p 6379:6379 -e REDIS_PASSWORD=TeLcEl registry.redhat.io/rhscl/redis-5-rhel7
-# docker stop redis-ephemeral
+# docker-compose up
+# docker-compose stop redis-ephemeral
 # redis-cli -h localhost -a TeLcEl GET 5516409291
 
 FILENAME=R09_80000000.txt

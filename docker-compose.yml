@@ -1,0 +1,33 @@
+version: "3.7"
+services:
+  eredis-bulk-load:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: eredis-bulk-load
+    environment:
+      - FILENAME=R09.txt
+      - REDIS_HOST=redis-db
+      - REDIS_PORT=6379
+      - REDIS_PASS=TeLcEl
+    volumes: 
+      - type: bind
+        source: ./data
+        target: /data
+    networks:
+      - redis-net
+    depends_on:
+      - redis
+  redis:
+    image: registry.redhat.io/rhscl/redis-5-rhel7
+    container_name: redis-ephemeral
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=TeLcEl
+    networks:
+      redis-net:
+        aliases:
+          - redis-db
+networks:
+  redis-net:

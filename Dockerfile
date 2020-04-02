@@ -22,27 +22,25 @@ ENV REDIS_HOST=redis
 ENV REDIS_PORT=6379
 ENV REDIS_PASS=changeme
 
-RUN echo -e "#!/bin/bash\n/app/redis_load_from_file /data/\$FILENAME \$REDIS_HOST \$REDIS_PORT \$REDIS_PASS" > ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
-
 COPY --from=EREDIS /usr/local/include/eredis.h /usr/local/include/
 COPY --from=EREDIS /usr/local/include/eredis-hiredis.h /usr/local/include/
 
-RUN mkdir /app/src
+RUN echo -e "#!/bin/bash\n/app/redis_load_from_file /data/\$FILENAME \$REDIS_HOST \$REDIS_PORT \$REDIS_PASS" > ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
-ADD redis_load_from_file.cpp /app/src/
-ADD FileWatcher.h /app/src/
-ADD log.h /app/src/
-ADD log.c /app/src/
+RUN mkdir /tmp/src
 
-RUN cd /app/src && \
+ADD redis_load_from_file.cpp /tmp/src/
+ADD FileWatcher.h /tmp/src/
+ADD log.h /tmp/src/
+ADD log.c /tmp/src/
+
+RUN cd /tmp/src && \
     gcc log.c -o log.o -c && \
     g++ -std=c++17 -w -Wall -pedantic redis_load_from_file.cpp log.o -o redis_load_from_file -O2 -lstdc++fs -leredis && \
     cp ./redis_load_from_file /app && \
     cd /app && \
-    rm -R /app/src
-
-RUN chown 1001 -R /app
+    rm -R /tmp/src
 
 USER 1001
 
