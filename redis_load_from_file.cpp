@@ -17,6 +17,7 @@
 #include "log.h"
 
 #define MAXCHAR 300
+#define DATA_BLOCK 5000000
 
 char *filename, *redis_host, *redis_pass;
 char *workdir = "/data";
@@ -51,6 +52,34 @@ void signal_conf()
     signal(SIGPIPE, SIG_IGN);
 }
 
+
+bool isConnected()
+{
+    bool isConnected = false;
+
+    if (e)
+    {
+        eredis_reply_t *reply; /* aka redisReply from hiredis */
+        /* get a reader */
+        eredis_reader_t *reader = eredis_r(e);
+
+        reply = eredis_r_cmd(reader, "PING");
+        //log_(L_INFO | L_CONS, "PING: %s\n", reply->str);
+
+        /* Release the reader */
+        eredis_r_release(reader);
+
+        if (reply != NULL && strcmp(reply->str, "PONG") == 0)
+        {
+            log_(L_INFO | L_CONS, "Conectado al servidor Redis.\n");
+
+            isConnected = true;
+        }
+    }
+
+    return isConnected;
+}
+
 int redis_init()
 {
     int status = -1;
@@ -60,23 +89,10 @@ int redis_init()
 
     /* conf */
     eredis_host_add(e, redis_host, redis_port);
-
     eredis_pc_cmd(e, "AUTH %s", redis_pass);
 
-    eredis_reply_t *reply; /* aka redisReply from hiredis */
-    /* get a reader */
-    eredis_reader_t *reader = eredis_r(e);
-
-    reply = eredis_r_cmd(reader, "PING");
-    //log_(L_INFO | L_CONS, "PING: %s\n", reply->str);
-
-    /* Release the reader */
-    eredis_r_release(reader);
-
-    if (reply != NULL && strcmp(reply->str, "PONG") == 0)
+    if (isConnected())
     {
-        // log_(L_INFO | L_CONS, "Conexion establecida con el servidor Redis.\n");
-
         status = 0;
 
         /* run thread */
@@ -106,15 +122,16 @@ void redis_close()
     }
 
     eredis_free(e);
+    e = NULL;
 }
 
 void redis_set(char *key, char *value)
 {
     if (!e)
     {
-        if (redis_init() != 0)
+        while (redis_init() != 0)
         {
-            return;
+            sleep(10);
         }
     }
 
@@ -132,11 +149,11 @@ void redis_set(char *key, char *value)
         }
     }
 
-    if (redis_set_count % 10000000 == 0)
+    if (redis_set_count % DATA_BLOCK == 0)
     {
         log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
         redis_close();
-        sleep(5);
+        sleep(1);
     }
 }
 
@@ -179,7 +196,9 @@ void load_data()
         fclose(file);
 
         log_(L_INFO | L_CONS, "Escuchando cambios en el archivo: %s\n", filename);
-    } else {
+    }
+    else
+    {
         log_(L_INFO | L_CONS, "Esperando a la creacion del archivo: %s\n", filename);
     }
 

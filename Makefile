@@ -2,7 +2,7 @@
 # docker build . -t eredis-bulk-load
 # docker-compose up
 # docker-compose stop redis-ephemeral
-# redis-cli -h localhost -a TeLcEl GET 5516409291
+# redis-cli -h localhost -a TeLcEl GET 5500000000
 
 FILENAME=R09.txt
 REDIS_HOST=localhost
