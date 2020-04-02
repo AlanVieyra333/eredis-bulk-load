@@ -71,7 +71,7 @@ bool isConnected()
 
         if (reply != NULL && strcmp(reply->str, "PONG") == 0)
         {
-            log_(L_INFO | L_CONS, "Conectado al servidor Redis.\n");
+            //log_(L_INFO | L_CONS, "Conectado al servidor Redis.\n");
 
             isConnected = true;
         }
