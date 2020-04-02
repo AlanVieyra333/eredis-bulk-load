@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: eredis-bulk-load:latest
     container_name: eredis-bulk-load
     environment:
       - FILENAME=R09.txt
