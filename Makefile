@@ -18,10 +18,10 @@ run: redis_load_from_file.o
 	./redis_load_from_file ${FILENAME} ${REDIS_HOST} ${REDIS_PORT} ${REDIS_PASS}
 
 generate: ./test/generate_file.o
-	./test/generate_file.o 20000000
+	./test/generate_file.o 50000000
 
 redis_load_from_file.o: redis_load_from_file.cpp log.o
-	g++ -std=c++17 -Wall -pedantic redis_load_from_file.cpp log.o -o redis_load_from_file -O2 -lstdc++fs -leredis
+	g++ -std=c++17 -Wall -pedantic redis_load_from_file.cpp log.o -o redis_load_from_file.o -O2 -lstdc++fs -leredis
 
 log.o: log.c
 	gcc log.c -o log.o -c

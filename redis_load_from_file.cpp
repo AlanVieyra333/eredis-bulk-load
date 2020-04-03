@@ -17,7 +17,8 @@
 #include "log.h"
 
 #define MAXCHAR 300
-#define DATA_BLOCK 5000000
+#define DATA_BLOCK 5000000  // Each DATA_BLOCK reg. disconnect to Redis server.
+#define U_SLEEP 100000      // Sleep 100ms.
 
 char *filename, *redis_host, *redis_pass;
 char *workdir = "/data";
@@ -102,6 +103,7 @@ int redis_init()
     {
         log_(L_INFO | L_CONS, "Sin conexion con el servidor Redis.\n");
         eredis_free(e);
+        eredis_shutdown(e);
     }
 
     return status;
@@ -122,6 +124,7 @@ void redis_close()
     }
 
     eredis_free(e);
+    eredis_shutdown(e);
     e = NULL;
 }
 
@@ -145,7 +148,7 @@ void redis_set(char *key, char *value)
         /* Let some time to process... normal run... yield a bit... push more write... etc.. */
         while (eredis_w_pending(e) > 0)
         {
-            usleep(75000);
+            usleep(U_SLEEP);
         }
     }
 
@@ -153,7 +156,7 @@ void redis_set(char *key, char *value)
     {
         log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
         redis_close();
-        sleep(1);
+        sleep(10);
     }
 }
 
@@ -194,6 +197,7 @@ void load_data()
         load_from_file(file);
 
         fclose(file);
+        free(file);
 
         log_(L_INFO | L_CONS, "Escuchando cambios en el archivo: %s\n", filename);
     }
