@@ -173,7 +173,7 @@ void load_data() {
     load_from_file(file);
 
     fclose(file);
-    free(file);
+    // free(file);
 
     log_(L_INFO | L_CONS, "Escuchando cambios en el archivo: %s\n", filename);
   } else {
