@@ -38,3 +38,6 @@ log.o: log.c
 
 clear:
 	rm -R -f *.o ./test/*.o ./data/log
+
+docker-login:
+	docker login $REMOTE_REGISTRY -u alan.rincon -p $(oc whoami -t)
