@@ -17,7 +17,7 @@ WORKDIR /app
 
 VOLUME [ "/data" ]
 
-ENV FILENAME=R09_80000000.txt
+ENV FILENAME=seriesSiantel.txt
 ENV REDIS_HOST=redis
 ENV REDIS_PORT=6379
 ENV REDIS_PASS=changeme
