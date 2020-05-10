@@ -107,7 +107,7 @@ void redis_close() {
   /* Let some time to process... normal run... yield a bit... push more write...
    * etc.. */
   while (eredis_w_pending(e) > 0) {
-    usleep(10);
+    usleep(1);
   }
 
   eredis_free(e);
@@ -138,7 +138,7 @@ void redis_set(char *key, char *value) {
   if (redis_set_count % DATA_BLOCK == 0) {
     log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
     redis_close();
-    sleep(1);
+    sleep(100);
   }
 }
 
