@@ -151,13 +151,11 @@ void load_from_file(FILE *file) {
   log_(L_INFO | L_CONS, "Cargando registros de %s...\n", filename);
 
   // Expansion de registros en el intervalo.
-  for (lines = 0. phone_count = 0;
-       fscanf(file, "%ld|%ld%[^\n]s", &phone_ini, &phone_end, value) != EOF;
-       lines++) {
+  for (lines = 0, phone_count = 0; fscanf(file, "%ld|%ld%[^\n]s", &phone_ini, &phone_end, value) != EOF; lines++) {
     phone_count += phone_end - phone_ini + 1;
 
     for (long phone = phone_ini; phone <= phone_end; phone++) {
-      key = itoa(phone);
+      sprintf(key, "%ld", phone);
 
       /* Cargar a Redis */
       redis_set(key, value);
@@ -241,7 +239,7 @@ int main(int argc, char *argv[]) {
 
   filename = argv[1];
   redis_host = argv[2];
-  redis_port = atoi(argv[3]);
+  redis_port = atol(argv[3]);
   redis_pass = argv[4];
 
   signal_conf();
