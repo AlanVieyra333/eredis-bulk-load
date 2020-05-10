@@ -138,31 +138,37 @@ void redis_set(char *key, char *value) {
   if (redis_set_count % DATA_BLOCK == 0) {
     log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
     redis_close();
-    sleep(10);
+    sleep(1);
   }
 }
 
 void load_from_file(FILE *file) {
-  char line[MAXCHAR];
-  char phone[11];
+  long phone_ini, phone_end;
+  char key[11];
+  char value[MAXCHAR];
+  int lines;
+  int phone_count;
 
   if (file == NULL) return;
 
   log_(L_INFO | L_CONS, "Cargando registros de %s...\n", filename);
 
-  while (fgets(line, MAXCHAR, file) != NULL) {
-    // sscanf(line, "%ld", &phone);
-    for (char i = 0; i < 10; i++) {
-      phone[i] = line[i];
+  // Expansion de registros en el intervalo.
+  for (lines = 0, phone_count = 0;
+       fscanf(file, "%ld|%ld%[^\n]s", &phone_ini, &phone_end, value) != EOF;
+       lines++) {
+    phone_count += phone_end - phone_ini + 1;
+
+    for (long phone = phone_ini; phone <= phone_end; phone++) {
+      sprintf(key, "%ld", phone);
+
+      /* Cargar a Redis */
+      redis_set(key, value);
     }
-
-    phone[10] = '\0';
-
-    /* Cargar a Redis */
-    redis_set(phone, line);
   }
 
-  log_(L_INFO | L_CONS, "Carga completa.\n");
+  log_(L_INFO | L_CONS, "Carga completa. Total de registros: %ld\n",
+       phone_count);
   redis_close();
 }
 
@@ -173,7 +179,6 @@ void load_data() {
     load_from_file(file);
 
     fclose(file);
-    // free(file);
 
     log_(L_INFO | L_CONS, "Escuchando cambios en el archivo: %s\n", filename);
   } else {
@@ -232,13 +237,14 @@ int main(int argc, char *argv[]) {
 
   if (argc != 5) {
     log_(L_WARN,
-         "./app.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> <REDIS_PASS>\n");
+         "./redis_load_from_file.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> "
+         "<REDIS_PASS>\n");
     exit(1);
   }
 
   filename = argv[1];
   redis_host = argv[2];
-  redis_port = atoi(argv[3]);
+  redis_port = atol(argv[3]);
   redis_pass = argv[4];
 
   signal_conf();
