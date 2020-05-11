@@ -26,6 +26,7 @@ int redis_port;
 static eredis_t *e;
 int redis_set_count = 0;
 int redis_cmd_fail = 0;
+float version = 1.1;
 
 struct sigaction old_action;
 
@@ -142,7 +143,7 @@ void redis_set(char *key, char *value) {
     if (redis_set_count % 100000000 == 0) {
       sleep(5 * 60);  // Wait 5 min.
     } else {
-      sleep(10);  // Wait 10 sec. 
+      sleep(20);  // Wait 20 sec. 
     }
   }
 }
@@ -234,9 +235,9 @@ void log_init() {
 }
 
 int main(int argc, char *argv[]) {
-  fprintf(stderr, "###################\n");
-  fprintf(stderr, "# Redis bulk load #\n");
-  fprintf(stderr, "###################\n\n");
+  fprintf(stderr, "########################\n");
+  fprintf(stderr, "# Redis bulk load v%.1f #\n", version);
+  fprintf(stderr, "########################\n\n");
 
   log_init();
 
