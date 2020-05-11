@@ -138,7 +138,12 @@ void redis_set(char *key, char *value) {
   if (redis_set_count % DATA_BLOCK == 0) {
     log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
     redis_close();
-    sleep(100);
+
+    if (redis_set_count % 100000000 == 0) {
+      sleep(5 * 60);  // Wait 5 min.
+    } else {
+      sleep(10);  // Wait 10 sec. 
+    }
   }
 }
 
