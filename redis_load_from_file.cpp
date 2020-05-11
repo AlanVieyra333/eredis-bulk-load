@@ -18,7 +18,7 @@
 
 #define MAXCHAR 300
 #define DATA_BLOCK 5000000  // Each DATA_BLOCK reg. disconnect to Redis server.
-#define U_SLEEP 100000      // Sleep 100ms.
+#define U_SLEEP 100         // Sleep 100us.
 
 char *filename, *redis_host, *redis_pass;
 char *workdir = "/data";
@@ -26,7 +26,7 @@ int redis_port;
 static eredis_t *e;
 int redis_set_count = 0;
 int redis_cmd_fail = 0;
-float version = 1.1;
+float version = 1.3;
 
 struct sigaction old_action;
 
@@ -141,9 +141,9 @@ void redis_set(char *key, char *value) {
     redis_close();
 
     if (redis_set_count % 100000000 == 0) {
-      sleep(5 * 60);  // Wait 5 min.
+      sleep(3 * 60);  // Wait 3 min.
     } else {
-      sleep(20);  // Wait 20 sec. 
+      sleep(3);  // Wait 3 sec.
     }
   }
 }
