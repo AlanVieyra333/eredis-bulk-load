@@ -1,6 +1,8 @@
 /**
  * Programa para leer registros de un archivo txt y agregarlos en un servidor
- * Redis. Tiempo tardado en cargar 30000000 aproximadamente: 5 min.
+ * Redis.
+ * Prueba:
+ * Tiempo en cargar 200 millones: 25 min. prox.
  *
  * @date 26/03/2020
  * @author Alan Fernando Rincón Vieyra <alan.rincon@mail.telcel.com>
@@ -17,8 +19,9 @@
 #include "log.h"
 
 #define MAXCHAR 300
-#define DATA_BLOCK 5000000  // Each DATA_BLOCK reg. disconnect to Redis server.
-#define U_SLEEP 100         // Sleep 100us.
+#define DATA_BLOCK 10000000  // Each DATA_BLOCK reg. reconnect to Redis server.
+#define U_SLEEP 10           // Sleep 10us.
+#define VERSION 1.4
 
 char *filename, *redis_host, *redis_pass;
 char *workdir = "/data";
@@ -26,7 +29,6 @@ int redis_port;
 static eredis_t *e;
 int redis_set_count = 0;
 int redis_cmd_fail = 0;
-float version = 1.3;
 
 struct sigaction old_action;
 
@@ -140,8 +142,8 @@ void redis_set(char *key, char *value) {
     log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
     redis_close();
 
-    if (redis_set_count % 100000000 == 0) {
-      sleep(3 * 60);  // Wait 3 min.
+    if (redis_set_count % 50000000 == 0) {
+      sleep(1 * 60);  // Wait 1 min.
     } else {
       sleep(3);  // Wait 3 sec.
     }
@@ -235,9 +237,9 @@ void log_init() {
 }
 
 int main(int argc, char *argv[]) {
-  fprintf(stderr, "########################\n");
-  fprintf(stderr, "# Redis bulk load v%.1f #\n", version);
-  fprintf(stderr, "########################\n\n");
+  fprintf(stderr, "###########################\n");
+  fprintf(stderr, "# Data load - Series v%.1f #\n", VERSION);
+  fprintf(stderr, "###########################\n\n");
 
   log_init();
 
