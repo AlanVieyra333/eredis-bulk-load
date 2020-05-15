@@ -13,6 +13,7 @@
 
 int main(int argc, char *argv[]) {
   int lines = 0;
+  int ignored = 0;
   int phone_count = 0;
   int phone_count_aux = 0;
   long phone_ini, phone_end;
@@ -36,14 +37,15 @@ int main(int argc, char *argv[]) {
        lines++) {
     phone_count_aux += phone_end - phone_ini + 1;
 
-    if (phone_end - phone_ini + 1 != 10000) {
+    if (phone_end - phone_ini < 10000) {
       phone_count += phone_end - phone_ini + 1;
     } else {
-      printf("10,000: %ld - %ld\n", phone_ini, phone_end);
+      ignored++;
     }
   }
 
   printf("Lineas en el archivo: %d\n", lines);
+  printf("Lineas ignoradas: %d\n", ignored);
   printf("Total de registros: %d (%d)\n", phone_count, phone_count_aux);
   printf("Ejemplo de datos en la ultma linea: %ld %ld %s\n", phone_ini,
          phone_end, value);

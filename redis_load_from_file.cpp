@@ -143,7 +143,7 @@ void redis_set(char *key, char *value) {
     redis_close();
 
     if (redis_set_count % 50000000 == 0) {
-      sleep(1 * 60);  // Wait 1 min.
+      sleep(30);  // Wait 30 sec.
     } else {
       sleep(3);  // Wait 3 sec.
     }
@@ -165,7 +165,7 @@ void load_from_file(FILE *file) {
   for (lines = 0, phone_count = 0;
        fscanf(file, "%ld|%ld%[^\n]s", &phone_ini, &phone_end, value) != EOF;
        lines++) {
-    if (phone_end - phone_ini != 10000) {
+    if (phone_end - phone_ini < 10000) {
       phone_count += phone_end - phone_ini + 1;
 
       for (long phone = phone_ini; phone <= phone_end; phone++) {
