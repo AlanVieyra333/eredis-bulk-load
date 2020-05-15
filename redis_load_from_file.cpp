@@ -143,7 +143,7 @@ void redis_set(char *key, char *value) {
     redis_close();
 
     if (redis_set_count % 50000000 == 0) {
-      sleep(60);  // Wait 60 sec.
+      sleep(3 * 60);  // Wait 3 min.
     } else {
       sleep(3);  // Wait 3 sec.
     }
