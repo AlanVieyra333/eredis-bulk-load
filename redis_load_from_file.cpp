@@ -20,7 +20,7 @@
 
 #define MAXCHAR 300
 #define DATA_BLOCK 10000000  // Each DATA_BLOCK reg. reconnect to Redis server.
-#define U_SLEEP 10           // Sleep 10us.
+#define U_SLEEP 100          // Sleep 10us.
 #define VERSION 1.6
 
 char *filename, *redis_host, *redis_pass;
