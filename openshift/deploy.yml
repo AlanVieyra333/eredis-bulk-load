@@ -73,7 +73,7 @@ items:
                   secretKeyRef:
                     key: database-password
                     name: redis-db-e
-            image: data-load-series
+            image: carga-redis-series
             imagePullPolicy: Always
             name: carga-redis-series
             resources:
@@ -99,5 +99,5 @@ items:
             - carga-redis-series
           from:
             kind: ImageStreamTag
-            name: 'data-load-series:latest'
+            name: 'carga-redis-series:latest'
         type: ImageChange
