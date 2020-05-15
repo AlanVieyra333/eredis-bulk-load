@@ -15,6 +15,8 @@ RUN INSTALL_PKGS="libev gcc-c++" && \
     rpm -V $INSTALL_PKGS && \
     yum -y clean all --enablerepo='*'
 
+RUN mkdir /app
+
 WORKDIR /app
 
 ENV FILENAME=seriesSiantel.txt
