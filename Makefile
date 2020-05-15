@@ -9,7 +9,7 @@ REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASS=TeLcEl
 
-.PHONY: build run clear generate
+.PHONY: build run clear generate docker-login docker-push
 
 build: redis_load_from_file.o ./test/generate_file.o ./test/redis_example.o ./test/read_file.o
 	@echo "Compilado."
@@ -40,4 +40,9 @@ clear:
 	rm -R -f *.o ./test/*.o ./data/log
 
 docker-login:
-	docker login $REMOTE_REGISTRY -u alan.rincon -p $(oc whoami -t)
+	docker login ${REMOTE_REGISTRY} -u david.samperio -p $(shell oc whoami -t)
+
+docker-push:
+	docker-compose build
+	docker tag data-load-series ${REMOTE_REGISTRY}/redis/data-load-series
+	docker push ${REMOTE_REGISTRY}/redis/data-load-series

@@ -1,11 +1,11 @@
 version: "3.3"
 services:
-  eredis-bulk-load:
+  data-load-series:
     build:
       context: .
       dockerfile: Dockerfile
-    image: eredis-bulk-load:latest
-    container_name: eredis-bulk-load
+    image: data-load-series:latest
+    container_name: data-load-series
     environment:
       - FILENAME=R09.txt
       - REDIS_HOST=redis-db

@@ -21,7 +21,7 @@
 #define MAXCHAR 300
 #define DATA_BLOCK 10000000  // Each DATA_BLOCK reg. reconnect to Redis server.
 #define U_SLEEP 10           // Sleep 10us.
-#define VERSION 1.4
+#define VERSION 1.5
 
 char *filename, *redis_host, *redis_pass;
 char *workdir = "/data";
@@ -130,7 +130,7 @@ void redis_set(char *key, char *value) {
   else
     ++redis_set_count;
 
-  if (redis_set_count % 10000 == 0) {
+  if (redis_set_count % 20000 == 0) {
     /* Let some time to process... normal run... yield a bit... push more
      * write... etc.. */
     while (eredis_w_pending(e) > 0) {
@@ -143,9 +143,9 @@ void redis_set(char *key, char *value) {
     redis_close();
 
     if (redis_set_count % 50000000 == 0) {
-      sleep(1 * 60);  // Wait 1 min.
+      sleep(10);  // Wait 10 sec.
     } else {
-      sleep(3);  // Wait 3 sec.
+      sleep(1);  // Wait 1 sec.
     }
   }
 }
@@ -165,13 +165,15 @@ void load_from_file(FILE *file) {
   for (lines = 0, phone_count = 0;
        fscanf(file, "%ld|%ld%[^\n]s", &phone_ini, &phone_end, value) != EOF;
        lines++) {
-    phone_count += phone_end - phone_ini + 1;
+    if (phone_end - phone_ini + 1 != 10000) {
+      phone_count += phone_end - phone_ini + 1;
 
-    for (long phone = phone_ini; phone <= phone_end; phone++) {
-      sprintf(key, "%ld", phone);
+      for (long phone = phone_ini; phone <= phone_end; phone++) {
+        sprintf(key, "%ld", phone);
 
-      /* Cargar a Redis */
-      redis_set(key, value);
+        /* Cargar a Redis */
+        redis_set(key, value);
+      }
     }
   }
 

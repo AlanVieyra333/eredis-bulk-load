@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: List
+items:
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: carga-redis-series
+    labels:
+      application: carga-redis-series
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: carga-redis-series
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: carga-redis-series:latest
+    source:
+      git:
+        uri: http://telcel.di.sds.oficinarquitectura.prod:7777/EX407665/eredis-bulk-load.git
+      type: Git
+    strategy:
+      dockerStrategy:
+        dockerfilePath: Dockerfile
+        from:
+          kind: DockerImage
+          name: centos:8
+      type: Docker
+    triggers:
+    - generic:
+        secret: TELCEL_CARGA_SERIES
+      type: Generic
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: carga-redis-series
+    name: carga-redis-series
+  spec:
+    replicas: 1
+    selector:
+      app: carga-redis-series
+      deploymentconfig: carga-redis-series
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: carga-redis-series
+          deploymentconfig: carga-redis-series
+      spec:
+        containers:
+          - env:
+              - name: FILENAME
+                value: seriesSiantel081019.txt
+              - name: REDIS_HOST
+                value: redis-db-e
+              - name: REDIS_PORT
+                value: '6379'
+              - name: REDIS_PASS
+                valueFrom:
+                  secretKeyRef:
+                    key: database-password
+                    name: redis-db-e
+            image: data-load-series
+            imagePullPolicy: Always
+            name: carga-redis-series
+            resources:
+              limits:
+                cpu: '1'
+                memory: 1536Mi
+              requests:
+                cpu: '1'
+                memory: 1Gi
+            volumeMounts:
+              - mountPath: /data
+                name: carga-masiva-data
+        restartPolicy: Always
+        volumes:
+          - name: carga-masiva-data
+            persistentVolumeClaim:
+              claimName: carga-masiva-data
+    triggers:
+      - type: ConfigChange
+      - imageChangeParams:
+          automatic: true
+          containerNames:
+            - carga-redis-series
+          from:
+            kind: ImageStreamTag
+            name: 'data-load-series:latest'
+        type: ImageChange

@@ -4,6 +4,8 @@ FROM centos:8
 LABEL maintainer="Alan Fernando Rincón Vieyra <alan.rincon@mail.telcel.com>"
 
 COPY --from=EREDIS /usr/local/lib/liberedis.so /lib64/
+COPY --from=EREDIS /usr/local/include/eredis.h /usr/local/include/
+COPY --from=EREDIS /usr/local/include/eredis-hiredis.h /usr/local/include/
 
 RUN useradd -u 1001 -r -g 0 -d /opt/app-root/src -s /sbin/nologin \
       -c "Default Application User" default
@@ -15,15 +17,10 @@ RUN INSTALL_PKGS="libev gcc-c++" && \
 
 WORKDIR /app
 
-VOLUME [ "/data" ]
-
 ENV FILENAME=seriesSiantel.txt
 ENV REDIS_HOST=redis
 ENV REDIS_PORT=6379
 ENV REDIS_PASS=changeme
-
-COPY --from=EREDIS /usr/local/include/eredis.h /usr/local/include/
-COPY --from=EREDIS /usr/local/include/eredis-hiredis.h /usr/local/include/
 
 RUN echo -e "#!/bin/bash\n/app/redis_load_from_file /data/\$FILENAME \$REDIS_HOST \$REDIS_PORT \$REDIS_PASS" > ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
@@ -43,5 +40,7 @@ RUN cd /tmp/src && \
     rm -R /tmp/src
 
 USER 1001
+
+VOLUME [ "/data" ]
 
 CMD [ "/app/entrypoint.sh" ]
