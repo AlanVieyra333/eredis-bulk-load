@@ -20,8 +20,8 @@
 
 #define MAXCHAR 300
 #define DATA_BLOCK 10000000  // Each DATA_BLOCK reg. reconnect to Redis server.
-#define U_SLEEP 100          // Sleep 100us.
-#define VERSION 1.5
+#define U_SLEEP 10           // Sleep 10us.
+#define VERSION 1.6
 
 char *filename, *redis_host, *redis_pass;
 char *workdir = "/data";
@@ -143,7 +143,7 @@ void redis_set(char *key, char *value) {
     redis_close();
 
     if (redis_set_count % 50000000 == 0) {
-      sleep(3 * 60);  // Wait 3 min.
+      sleep(1 * 60);  // Wait 1 min.
     } else {
       sleep(3);  // Wait 3 sec.
     }
