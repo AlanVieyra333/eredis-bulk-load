@@ -36,7 +36,6 @@ RUN cd /tmp/src && \
     gcc log.c -o log.o -c && \
     g++ -std=c++17 -w -Wall -pedantic redis_load_from_file.cpp log.o -o redis_load_from_file -O2 -lstdc++fs -leredis && \
     cp ./redis_load_from_file /app && \
-    cd /app && \
     rm -R /tmp/src
 
 USER 1001
