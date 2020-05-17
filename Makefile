@@ -39,10 +39,9 @@ log.o: log.c
 clear:
 	rm -R -f *.o ./test/*.o ./data/log
 
-docker-login:
-	docker login ${REMOTE_REGISTRY} -u david.samperio -p $(shell oc whoami -t)
-
-docker-push:
+docker-build:
 	docker-compose build
-	docker tag data-load-series ${REMOTE_REGISTRY}/redis/data-load-series
-	docker push ${REMOTE_REGISTRY}/redis/data-load-series
+
+ansible:
+	cd openshift-applier/ && ansible-galaxy install -r requirements.yml --roles-path=roles
+	cd openshift-applier/ && ansible-playbook site.yml

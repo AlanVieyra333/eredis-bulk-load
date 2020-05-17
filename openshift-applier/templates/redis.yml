@@ -61,7 +61,7 @@ spec:
               memory: 22Gi
             requests:
               cpu: 1
-              memory: 22Gi
+              memory: 20Gi
           securityContext:
             capabilities: {}
             privileged: false

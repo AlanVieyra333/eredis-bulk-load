@@ -1,0 +1,31 @@
+---
+ansible_connection: local
+
+# Create new projects with a given short name and display name
+openshift_cluster_content:
+- object: projectrequest
+  content:
+  - name: "{{ namespace }}"
+    template: "https://raw.githubusercontent.com/redhat-cop/openshift-templates/v1.4.12/project-requests/create-project.yml"
+    params_from_vars: "{{ project }}"
+    action: create
+    tags:
+      - "{{ namespace }}"
+
+- object: templates
+  content:
+  - name: "secrets"
+    file: "{{ inventory_dir }}/../templates/secrets.yml"
+    namespace: "{{ namespace }}"
+    tags:
+      - "{{ namespace }}"
+  - name: "redis"
+    file: "{{ inventory_dir }}/../templates/redis.yml"
+    namespace: "{{ namespace }}"
+    tags:
+      - "{{ namespace }}"
+  - name: "carga-series"
+    file: "{{ inventory_dir }}/../templates/carga-series.yml"
+    namespace: "{{ namespace }}"
+    tags:
+      - "{{ namespace }}"

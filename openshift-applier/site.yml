@@ -1,0 +1,14 @@
+# This is the default playbook and will create a standard (relatively large) install.
+---
+- name: Create Project
+  hosts: bootstrap
+  vars:
+    namespace: redis-test
+    project:
+      name: carga-redis-series
+      NAMESPACE: "{{ namespace }}"
+      NAMESPACE_DISPLAY_NAME: "{{ namespace }}"
+      NAMESPACE_DESCRIPTION: ""
+  tasks:
+    - include_role:
+        name: openshift-applier/roles/openshift-applier
