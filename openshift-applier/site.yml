@@ -3,12 +3,12 @@
 - name: Create Project
   hosts: bootstrap
   vars:
-    namespace: redis-test
+    namespace: redis
     project:
-      name: carga-redis-series
+      PROJECT_NAME: carga-redis-series
       NAMESPACE: "{{ namespace }}"
-      NAMESPACE_DISPLAY_NAME: "{{ namespace }}"
-      NAMESPACE_DESCRIPTION: ""
+      NAMESPACE_DISPLAY_NAME: "Redis"
+      NAMESPACE_DESCRIPTION: "Priebas con redis"
   tasks:
     - include_role:
         name: openshift-applier/roles/openshift-applier

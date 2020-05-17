@@ -41,7 +41,9 @@ clear:
 
 docker-build:
 	docker-compose build
+	
+ansible-init:
+	cd openshift-applier/ && ansible-galaxy install -r requirements.yml --roles-path=roles
 
 ansible:
-	cd openshift-applier/ && ansible-galaxy install -r requirements.yml --roles-path=roles
 	cd openshift-applier/ && ansible-playbook site.yml

@@ -5,3 +5,4 @@
 log/
 data/*
 openshift-applier/roles/
+.retry

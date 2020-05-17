@@ -140,10 +140,14 @@ void redis_set(char *key, char *value) {
 
   if (redis_set_count % DATA_BLOCK == 0) {
     log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
+  }
+
+  // Reconnect from redis.
+  if (redis_set_count % 5000000 == 0) {
     redis_close();
 
-    if (redis_set_count % 30000000 == 0) {
-      sleep(60);  // Wait 1 min.
+    if (redis_set_count % 20000000 == 0) {
+      sleep(30);  // Wait 30 sec.
     } else {
       sleep(3);  // Wait 3 sec.
     }
