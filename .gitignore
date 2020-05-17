@@ -1,6 +1,6 @@
 .DS_Store
 *.o
-*.txt
 *.rpm
 *.tar.gz
 log/
+data/*
