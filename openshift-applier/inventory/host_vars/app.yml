@@ -12,20 +12,31 @@ openshift_cluster_content:
     tags:
       - "{{ namespace }}"
 
-- object: templates
+- object: carga-series
   content:
   - name: "secrets"
     file: "{{ inventory_dir }}/../templates/secrets.yml"
     namespace: "{{ namespace }}"
     tags:
       - "{{ namespace }}"
-  - name: "redis"
+  - name: "redis-series"
     file: "{{ inventory_dir }}/../templates/redis.yml"
     namespace: "{{ namespace }}"
     tags:
       - "{{ namespace }}"
-  - name: "carga-series"
+  - name: "process"
     file: "{{ inventory_dir }}/../templates/carga-series.yml"
+    namespace: "{{ namespace }}"
+    tags:
+      - "{{ namespace }}"
+
+- object: carga-planes
+  content:
+  - name: "redis-planes"
+    template: "{{ openshift_db_templates_raw }}/{{ openshift_db_templates_raw_version_tag }}/examples/db-templates/redis-ephemeral-template.json"
+    params_from_vars: "{{ redis-planes.deploy }}"
+  - name: "process"
+    file: "{{ inventory_dir }}/../templates/carga-planes.yml"
     namespace: "{{ namespace }}"
     tags:
       - "{{ namespace }}"
