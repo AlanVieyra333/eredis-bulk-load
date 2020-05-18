@@ -29,7 +29,6 @@ int redis_port;
 static eredis_t *e;
 int redis_set_count = 0;
 int redis_cmd_fail = 0;
-bool expansion = false;
 
 struct sigaction old_action;
 
@@ -167,23 +166,19 @@ void load_from_file(FILE *file) {
   log_(L_INFO | L_CONS, "Cargando registros de %s...\n", filename);
 
   // Expansion de registros en el intervalo.
-  if (expansion) {
-    for (lines = 0, phone_count = 0;
-        fscanf(file, "%ld|%ld%[^\n]s", &phone_ini, &phone_end, value) != EOF;
-        lines++) {
-      if (phone_end - phone_ini < 10000) {
-        phone_count += phone_end - phone_ini + 1;
+  for (lines = 0, phone_count = 0;
+       fscanf(file, "%ld|%ld%[^\n]s", &phone_ini, &phone_end, value) != EOF;
+       lines++) {
+    if (phone_end - phone_ini < 10000) {
+      phone_count += phone_end - phone_ini + 1;
 
-        for (long phone = phone_ini; phone <= phone_end; phone++) {
-          sprintf(key, "%ld", phone);
+      for (long phone = phone_ini; phone <= phone_end; phone++) {
+        sprintf(key, "%ld", phone);
 
-          /* Cargar a Redis */
-          redis_set(key, value);
-        }
+        /* Cargar a Redis */
+        redis_set(key, value);
       }
     }
-  } else {
-    
   }
 
   log_(L_INFO | L_CONS, "Carga completa. Total de registros: %ld\n",
@@ -254,9 +249,10 @@ int main(int argc, char *argv[]) {
 
   log_init();
 
-  if (argc < 5) {
+  if (argc != 5) {
     log_(L_WARN,
-         "./redis_load_from_file.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> <REDIS_PASS> <EXPANSION?>\n");
+         "./redis_load_from_file.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> "
+         "<REDIS_PASS>\n");
     exit(1);
   }
 
@@ -264,8 +260,6 @@ int main(int argc, char *argv[]) {
   redis_host = argv[2];
   redis_port = atol(argv[3]);
   redis_pass = argv[4];
-
-  expansion = (argc >= 6 && argv[5] == "false") ? false : true;
 
   signal_conf();
 

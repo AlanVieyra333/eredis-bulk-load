@@ -19,26 +19,27 @@ RUN mkdir /app
 
 WORKDIR /app
 
-ENV FILENAME=seriesSiantel.txt
+ARG APP=redis_data_load_series
+
+ENV FILENAME=filename.txt
 ENV REDIS_HOST=redis
 ENV REDIS_PORT=6379
 ENV REDIS_PASS=changeme
-ENV EXPANSION=true
 
-RUN echo -e "#!/bin/bash\n/app/redis_load_from_file /data/\$FILENAME \$REDIS_HOST \$REDIS_PORT \$REDIS_PASS \$EXPANSION" > ./entrypoint.sh
+RUN echo -e "#!/bin/bash\n/app/$APP /data/\$FILENAME \$REDIS_HOST \$REDIS_PORT \$REDIS_PASS" > ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 
 RUN mkdir /tmp/src
 
-ADD redis_load_from_file.cpp /tmp/src/
+ADD $APP.cpp /tmp/src/
 ADD FileWatcher.h /tmp/src/
 ADD log.h /tmp/src/
 ADD log.c /tmp/src/
 
 RUN cd /tmp/src && \
     gcc log.c -o log.o -c && \
-    g++ -std=c++17 -w -Wall -pedantic redis_load_from_file.cpp log.o -o redis_load_from_file -O2 -lstdc++fs -leredis && \
-    cp ./redis_load_from_file /app && \
+    g++ -std=c++17 -w -Wall -pedantic $APP.cpp log.o -o $APP.o -O2 -lstdc++fs -leredis && \
+    cp ./$APP.o /app/$APP && \
     rm -R /tmp/src
 
 USER 1001

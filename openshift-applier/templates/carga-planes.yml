@@ -62,8 +62,6 @@ items:
       spec:
         containers:
           - env:
-              - name: EXPANSION
-                value: false
               - name: FILENAME
                 value: Planes.txt
               - name: REDIS_HOST

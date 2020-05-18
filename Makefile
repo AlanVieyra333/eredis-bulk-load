@@ -9,19 +9,22 @@ REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASS=TeLcEl
 
-.PHONY: build run clear generate docker-login docker-push
+.PHONY: build run clear generate docker-build deploy
 
-build: redis_load_from_file.o ./test/generate_file.o ./test/redis_example.o ./test/read_file.o
+build: load_data_redis_series.o load_data_redis_planes.o ./test/generate_file.o ./test/redis_example.o ./test/read_file.o
 	@echo "Compilado."
 
-run: redis_load_from_file.o
-	./redis_load_from_file ${FILENAME} ${REDIS_HOST} ${REDIS_PORT} ${REDIS_PASS}
+run: load_data_redis_series.o
+	./load_data_redis_series.o ${FILENAME} ${REDIS_HOST} ${REDIS_PORT} ${REDIS_PASS}
 
 generate: ./test/generate_file.o
 	./test/generate_file.o 50000000
 
-redis_load_from_file.o: redis_load_from_file.cpp log.o
-	g++ -std=c++17 -Wall -pedantic redis_load_from_file.cpp log.o -o redis_load_from_file.o -O2 -lstdc++fs -leredis
+load_data_redis_series.o: load_data_redis_series.cpp log.o
+	g++ -std=c++17 -w -Wall -pedantic load_data_redis_series.cpp log.o -o load_data_redis_series.o -O2 -lstdc++fs -leredis
+
+load_data_redis_planes.o: load_data_redis_planes.cpp log.o
+	g++ -std=c++17 -w -Wall -pedantic load_data_redis_planes.cpp log.o -o load_data_redis_planes.o -O2 -lstdc++fs -leredis
 
 log.o: log.c
 	gcc log.c -o log.o -c
@@ -42,8 +45,8 @@ clear:
 docker-build:
 	docker-compose build
 	
-ansible-init:
+openshift-applier/roles:
 	cd openshift-applier/ && ansible-galaxy install -r requirements.yml --roles-path=roles
 
-ansible:
+deploy: openshift-applier/roles
 	cd openshift-applier/ && ansible-playbook site.yml

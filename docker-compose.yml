@@ -4,10 +4,33 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - APP=redis_data_load_series
     image: data-load-series:latest
     container_name: data-load-series
     environment:
-      - FILENAME=R09.txt
+      - FILENAME=seriesSiantel.txt
+      - REDIS_HOST=redis-db
+      - REDIS_PORT=6379
+      - REDIS_PASS=TeLcEl
+    volumes: 
+      - type: bind
+        source: ./data
+        target: /data
+    networks:
+      - redis-net
+    depends_on:
+      - redis
+  data-load-planes:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - APP=redis_data_load_planes
+    image: data-load-planes:latest
+    container_name: data-load-planes
+    environment:
+      - FILENAME=Planes.txt
       - REDIS_HOST=redis-db
       - REDIS_PORT=6379
       - REDIS_PASS=TeLcEl
