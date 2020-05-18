@@ -23,8 +23,9 @@ ENV FILENAME=seriesSiantel.txt
 ENV REDIS_HOST=redis
 ENV REDIS_PORT=6379
 ENV REDIS_PASS=changeme
+ENV EXPANSION=true
 
-RUN echo -e "#!/bin/bash\n/app/redis_load_from_file /data/\$FILENAME \$REDIS_HOST \$REDIS_PORT \$REDIS_PASS" > ./entrypoint.sh
+RUN echo -e "#!/bin/bash\n/app/redis_load_from_file /data/\$FILENAME \$REDIS_HOST \$REDIS_PORT \$REDIS_PASS \$EXPANSION" > ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 
 RUN mkdir /tmp/src
