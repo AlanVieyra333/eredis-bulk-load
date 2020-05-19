@@ -11,20 +11,20 @@ REDIS_PASS=TeLcEl
 
 .PHONY: build run clear generate docker-build deploy
 
-build: load_data_redis_series.o load_data_redis_planes.o ./test/generate_file.o ./test/redis_example.o ./test/read_file.o
+build: redis_data_load_series.o redis_data_load_planes.o ./test/generate_file.o ./test/redis_example.o ./test/read_file.o
 	@echo "Compilado."
 
-run: load_data_redis_series.o
-	./load_data_redis_series.o ${FILENAME} ${REDIS_HOST} ${REDIS_PORT} ${REDIS_PASS}
+run: redis_data_load_series.o
+	./redis_data_load_series.o ${FILENAME} ${REDIS_HOST} ${REDIS_PORT} ${REDIS_PASS}
 
 generate: ./test/generate_file.o
 	./test/generate_file.o 50000000
 
-load_data_redis_series.o: load_data_redis_series.cpp log.o
-	g++ -std=c++17 -w -Wall -pedantic load_data_redis_series.cpp log.o -o load_data_redis_series.o -O2 -lstdc++fs -leredis
+redis_data_load_series.o: redis_data_load_series.cpp log.o
+	g++ -std=c++17 -w -Wall -pedantic redis_data_load_series.cpp log.o -o redis_data_load_series.o -O2 -lstdc++fs -leredis
 
-load_data_redis_planes.o: load_data_redis_planes.cpp log.o
-	g++ -std=c++17 -w -Wall -pedantic load_data_redis_planes.cpp log.o -o load_data_redis_planes.o -O2 -lstdc++fs -leredis
+redis_data_load_planes.o: redis_data_load_planes.cpp log.o
+	g++ -std=c++17 -w -Wall -pedantic redis_data_load_planes.cpp log.o -o redis_data_load_planes.o -O2 -lstdc++fs -leredis
 
 log.o: log.c
 	gcc log.c -o log.o -c
@@ -42,7 +42,7 @@ log.o: log.c
 clear:
 	rm -R -f *.o ./test/*.o ./data/log
 
-docker-build:
+docker-build: Dockerfile redis_data_load_series.cpp redis_data_load_planes.cpp FileWatcher.h log.h log.c
 	docker-compose build
 	
 openshift-applier/roles:

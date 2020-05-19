@@ -237,9 +237,9 @@ void file_watcher() {
 void log_init() {
   char logFilename[MAXCHAR];
   strcpy(logFilename, workdir);
-  strcat(logFilename, "/log/redis_load_from_file.log");
+  strcat(logFilename, "/log/redis_data_load.log");
 
-  LOG_CONFIG c = {9, LOG_DEST_FILES, logFilename, "redis_load_from_file", 0, 1};
+  LOG_CONFIG c = {9, LOG_DEST_FILES, logFilename, "redis_data_load", 0, 1};
   log_set_config(&c);
 }
 
@@ -252,7 +252,7 @@ int main(int argc, char *argv[]) {
 
   if (argc < 5) {
     log_(L_WARN,
-         "./redis_load_from_file.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> <REDIS_PASS> <EXPANSION?>\n");
+         "./redis_data_load.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> <REDIS_PASS> <EXPANSION?>\n");
     exit(1);
   }
 

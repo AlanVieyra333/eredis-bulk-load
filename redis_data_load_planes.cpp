@@ -21,10 +21,10 @@
 #define MAXCHAR 300
 #define DATA_BLOCK 10000000  // Each DATA_BLOCK reg. reconnect to Redis server.
 #define U_SLEEP 100          // Sleep 10us.
-#define VERSION 1.0
+#define VERSION 1.1
+#define WORKDIR "/data"
 
 char *filename, *redis_host, *redis_pass;
-char *workdir = "/data";
 int redis_port;
 static eredis_t *e;
 int redis_set_count = 0;
@@ -166,15 +166,13 @@ void load_from_file(FILE *file) {
 
   // Lectura de lineas en el archivo.
   for (lines = 0;
-       fscanf(file, "%[^|]|%[^|]|%[^\n]s", key, region, value) != EOF;
+       fscanf(file, "%[^|]|%[^|]|%[^\n]\n", key, region, value, NULL) != EOF;
        lines++) {
     strcat(key, region);
 
     /* Cargar a Redis */
     redis_set(key, value);
   }
-
-  printf("Ejemplo: %s:%s\n", key, value);
 
   log_(L_INFO | L_CONS, "Carga completa. Total de registros: %ld\n",
        lines);
@@ -201,7 +199,7 @@ void load_data() {
 void file_watcher() {
   // Create a FileWatcher instance that will check the current folder for
   // changes every 5 seconds
-  FileWatcher fw{workdir, std::chrono::milliseconds(1000)};
+  FileWatcher fw{WORKDIR, std::chrono::milliseconds(1000)};
 
   // Start monitoring a folder for changes and (in case of changes)
   // run a user provided lambda function
@@ -230,10 +228,10 @@ void file_watcher() {
 
 void log_init() {
   char logFilename[MAXCHAR];
-  strcpy(logFilename, workdir);
-  strcat(logFilename, "/log/redis_load_from_file.log");
+  strcpy(logFilename, WORKDIR);
+  strcat(logFilename, "/log/redis_data_load.log");
 
-  LOG_CONFIG c = {9, LOG_DEST_FILES, logFilename, "redis_load_from_file", 0, 1};
+  LOG_CONFIG c = {9, LOG_DEST_FILES, logFilename, "redis_data_load", 0, 1};
   log_set_config(&c);
 }
 
@@ -246,7 +244,7 @@ int main(int argc, char *argv[]) {
 
   if (argc != 5) {
     log_(L_WARN,
-         "./redis_load_from_file.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> "
+         "./redis_data_load.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> "
          "<REDIS_PASS>\n");
     exit(1);
   }
