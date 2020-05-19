@@ -166,9 +166,7 @@ void load_from_file(FILE *file) {
 
   // Lectura de lineas en el archivo.
   for (lines = 0;
-       fscanf(file, "%[^|]s", key) != EOF &&
-       fscanf(file, "%[^|]s", region) != EOF &&
-       fscanf(file, "%[^\n]s", value) != EOF;
+       fscanf(file, "%[^|]|%[^|]|%[^\n]s", key, region, value) != EOF;
        lines++) {
     strcat(key, region);
 
