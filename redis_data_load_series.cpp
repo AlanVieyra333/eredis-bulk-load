@@ -29,6 +29,7 @@ int redis_port;
 static eredis_t *e;
 int redis_set_count = 0;
 int redis_cmd_fail = 0;
+bool expansion = false;
 
 struct sigaction old_action;
 
@@ -249,10 +250,9 @@ int main(int argc, char *argv[]) {
 
   log_init();
 
-  if (argc != 5) {
+  if (argc < 5) {
     log_(L_WARN,
-         "./redis_load_from_file.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> "
-         "<REDIS_PASS>\n");
+         "./redis_load_from_file.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> <REDIS_PASS> <EXPANSION?>\n");
     exit(1);
   }
 
@@ -260,6 +260,8 @@ int main(int argc, char *argv[]) {
   redis_host = argv[2];
   redis_port = atol(argv[3]);
   redis_pass = argv[4];
+
+  expansion = (argc >= 6 && argv[5] == "false") ? false : true;
 
   signal_conf();
 
