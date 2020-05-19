@@ -8,7 +8,7 @@
       PROJECT_NAME: carga-redis-series
       NAMESPACE: "{{ namespace }}"
       NAMESPACE_DISPLAY_NAME: "Redis"
-      NAMESPACE_DESCRIPTION: "Priebas con redis"
+      NAMESPACE_DESCRIPTION: "Pruebas con redis"
   tasks:
     - include_role:
         name: openshift-applier/roles/openshift-applier

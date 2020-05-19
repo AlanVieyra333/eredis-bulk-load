@@ -26,6 +26,9 @@ items:
         from:
           kind: DockerImage
           name: centos:8
+        buildArgs:
+        - name: APP
+          value: redis_data_load_series
       type: Docker
     triggers:
     - generic:

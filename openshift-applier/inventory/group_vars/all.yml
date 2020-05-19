@@ -8,12 +8,22 @@ cop_quickstarts_raw_version_tag: "v1.18"
 openshift_db_templates_raw: "https://raw.githubusercontent.com/openshift/origin"
 openshift_db_templates_raw_version_tag: "v3.11.0"
 
-redis-planes:
+redis:
   build:
-    imagestream: "https://raw.githubusercontent.com/sclorg/redis-container/master/imagestreams/redis-rhel7.json"
+    imagestream:
+      rhel: "https://raw.githubusercontent.com/sclorg/redis-container/master/imagestreams/redis-rhel7.json"
+      centos: "https://raw.githubusercontent.com/sclorg/redis-container/master/imagestreams/redis-centos7.json"
+    version: 5
   deploy:
-    MEMORY_LIMIT: 10Gi
-    NAMESPACE: openshift
-    DATABASE_SERVICE_NAME: redis-planes
-    REDIS_PASSWORD: TeLcEl
-    REDIS_VERSION: 3.2
+    series:
+      MEMORY_LIMIT: 20Gi
+      NAMESPACE: "openshift"
+      DATABASE_SERVICE_NAME: redis-series
+      REDIS_PASSWORD: TeLcEl
+      REDIS_VERSION: "3.2"
+    planes:
+      MEMORY_LIMIT: 200Mi
+      NAMESPACE: "openshift"
+      DATABASE_SERVICE_NAME: redis-planes
+      REDIS_PASSWORD: TeLcEl
+      REDIS_VERSION: "3.2"

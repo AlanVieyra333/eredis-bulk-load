@@ -26,6 +26,9 @@ items:
         from:
           kind: DockerImage
           name: centos:8
+        buildArgs:
+        - name: APP
+          value: redis_data_load_planes
       type: Docker
     triggers:
     - generic:
@@ -78,11 +81,11 @@ items:
             name: carga-redis-planes
             resources:
               limits:
-                cpu: '1'
-                memory: 1536Mi
+                cpu: '50m'
+                memory: 100Mi
               requests:
-                cpu: '1'
-                memory: 1Gi
+                cpu: '50m'
+                memory: 100Mi
             volumeMounts:
               - mountPath: /data
                 name: carga-masiva-data

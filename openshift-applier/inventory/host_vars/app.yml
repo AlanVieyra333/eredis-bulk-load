@@ -12,6 +12,14 @@ openshift_cluster_content:
     tags:
       - "{{ namespace }}"
 
+# - object: images
+#   content:
+#   - name: "redis"
+#     file: "{{ redis.build.imagestream.rhel }}"
+#     namespace: "{{ namespace }}"
+#     tags:
+#       - "{{ namespace }}"
+
 - object: carga-series
   content:
   - name: "secrets"
@@ -32,9 +40,12 @@ openshift_cluster_content:
 
 - object: carga-planes
   content:
-  - name: "redis-planes"
+  - name: "redis"
     template: "{{ openshift_db_templates_raw }}/{{ openshift_db_templates_raw_version_tag }}/examples/db-templates/redis-ephemeral-template.json"
-    params_from_vars: "{{ redis-planes.deploy }}"
+    params_from_vars: "{{ redis.deploy.planes }}"
+    namespace: "{{ namespace }}"
+    tags:
+      - "{{ namespace }}"
   - name: "process"
     file: "{{ inventory_dir }}/../templates/carga-planes.yml"
     namespace: "{{ namespace }}"
