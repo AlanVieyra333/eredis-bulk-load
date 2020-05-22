@@ -42,6 +42,27 @@ services:
       - redis-net
     depends_on:
       - redis
+  data-load-billing:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - APP=redis_data_load_billing
+    image: data-load-billing:latest
+    container_name: data-load-billing
+    environment:
+      - FILENAME=ArchivosBillings
+      - REDIS_HOST=redis-db
+      - REDIS_PORT=6379
+      - REDIS_PASS=TeLcEl
+    volumes: 
+      - type: bind
+        source: ./data
+        target: /data
+    networks:
+      - redis-net
+    depends_on:
+      - redis
   redis:
     image: registry.redhat.io/rhscl/redis-5-rhel7
     container_name: redis-ephemeral

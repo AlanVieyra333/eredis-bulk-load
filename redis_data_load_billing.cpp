@@ -8,6 +8,7 @@
  * @author Alan Fernando Rincón Vieyra <alan.rincon@mail.telcel.com>
  */
 
+#include <dirent.h>
 #include <eredis.h>
 #include <signal.h>
 #include <stdio.h>
@@ -21,10 +22,10 @@
 #define MAXCHAR 300
 #define DATA_BLOCK 10000000  // Each DATA_BLOCK reg. reconnect to Redis server.
 #define U_SLEEP 100          // Sleep 10us.
-#define VERSION 1.6
+#define VERSION 1.0
+#define WORKDIR "/data"
 
-char *filename, *redis_host, *redis_pass;
-char *workdir = "/data";
+char *filename, *dirname, *redis_host, *redis_pass;
 int redis_port;
 static eredis_t *e;
 int redis_set_count = 0;
@@ -155,38 +156,40 @@ void redis_set(char *key, char *value) {
 }
 
 void load_from_file(FILE *file) {
-  long phone_ini, phone_end;
-  char key[11];
+  char key[20];
   char value[MAXCHAR];
   int lines;
-  int phone_count;
+  char region[20];
 
   if (file == NULL) return;
 
   log_(L_INFO | L_CONS, "Cargando registros de %s...\n", filename);
 
-  // Expansion de registros en el intervalo.
-  for (lines = 0, phone_count = 0;
-       fscanf(file, "%ld|%ld%[^\n]s", &phone_ini, &phone_end, value) != EOF;
+  // Lectura de lineas en el archivo.
+  for (lines = 0;
+       fscanf(file, "%[^|]|%[^|]|%[^\n]\n", key, region, value, NULL) != EOF;
        lines++) {
-    if (phone_end - phone_ini < 10000) {
-      phone_count += phone_end - phone_ini + 1;
+    strcat(key, region);
 
-      for (long phone = phone_ini; phone <= phone_end; phone++) {
-        sprintf(key, "%ld", phone);
-
-        /* Cargar a Redis */
-        redis_set(key, value);
-      }
-    }
+    /* Cargar a Redis */
+    redis_set(key, value);
   }
 
-  log_(L_INFO | L_CONS, "Carga completa. Total de registros: %ld\n",
-       phone_count);
+  log_(L_INFO | L_CONS, "Carga completa. Total de registros: %ld\n", lines);
   redis_close();
 }
 
 void load_data() {
+  DIR *d = opendir(dirname);
+
+  if (d) {
+    struct dirent *dir;
+    while ((dir = readdir(d)) != NULL) {
+      printf("%s\n", dir->d_name);
+    }
+    closedir(d);
+  }
+
   FILE *file = fopen(filename, "r");
 
   if (file != NULL) {
@@ -206,7 +209,7 @@ void load_data() {
 void file_watcher() {
   // Create a FileWatcher instance that will check the current folder for
   // changes every 5 seconds
-  FileWatcher fw{workdir, std::chrono::milliseconds(1000)};
+  FileWatcher fw{WORKDIR, std::chrono::milliseconds(1000)};
 
   // Start monitoring a folder for changes and (in case of changes)
   // run a user provided lambda function
@@ -235,7 +238,7 @@ void file_watcher() {
 
 void log_init() {
   char logFilename[MAXCHAR];
-  strcpy(logFilename, workdir);
+  strcpy(logFilename, WORKDIR);
   strcat(logFilename, "/log/redis_data_load.log");
 
   LOG_CONFIG c = {9, LOG_DEST_FILES, logFilename, "redis_data_load", 0, 1};
@@ -244,18 +247,20 @@ void log_init() {
 
 int main(int argc, char *argv[]) {
   fprintf(stderr, "###########################\n");
-  fprintf(stderr, "# Data load - Series v%.1f #\n", VERSION);
+  fprintf(stderr, "# Data load - Billing v%.1f #\n", VERSION);
   fprintf(stderr, "###########################\n\n");
 
   log_init();
 
-  if (argc < 5) {
+  if (argc != 5) {
     log_(L_WARN,
-         "./redis_data_load.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> <REDIS_PASS>\n");
+         "./redis_data_load.o <DIR_NAME> <REDIS_HOST> <REDIS_PORT> "
+         "<REDIS_PASS>\n");
     exit(1);
   }
 
-  filename = argv[1];
+  strcpy(dirname, WORKDIR);
+  strcat(dirname, argv[1]);
   redis_host = argv[2];
   redis_port = atol(argv[3]);
   redis_pass = argv[4];
