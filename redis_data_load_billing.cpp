@@ -4,6 +4,9 @@
  * Prueba:
  * Tiempo en cargar 200 millones: 25 min. prox.
  *
+ * @todo Al escuchar el cambio de un archivo .dat solo cargar los datos de ese
+ * archivo y no cargar nuevamente todos.
+ *
  * @date 26/03/2020
  * @author Alan Fernando Rincón Vieyra <alan.rincon@mail.telcel.com>
  */
@@ -25,7 +28,7 @@
 #define VERSION 1.0
 #define WORKDIR "/data"
 
-char *filename, *dirname, *redis_host, *redis_pass;
+char *dirname, *redis_host, *redis_pass;
 int redis_port;
 static eredis_t *e;
 int redis_set_count = 0;
@@ -155,52 +158,79 @@ void redis_set(char *key, char *value) {
   }
 }
 
-void load_from_file(FILE *file) {
+/**
+ * @return Number of lines loaded.
+ */
+int load_from_file(FILE *file, char *filename) {
   char key[20];
   char value[MAXCHAR];
   int lines;
-  char region[20];
 
-  if (file == NULL) return;
+  if (file == NULL) return 0;
 
-  log_(L_INFO | L_CONS, "Cargando registros de %s...\n", filename);
+  log_(L_INFO | L_CONS, "Cargando registros de %s ...\n", filename);
 
   // Lectura de lineas en el archivo.
-  for (lines = 0;
-       fscanf(file, "%[^|]|%[^|]|%[^\n]\n", key, region, value, NULL) != EOF;
-       lines++) {
-    strcat(key, region);
-
+  fscanf(file, "%d %[^\n]\n", &lines, NULL);
+  fscanf(file, "%[^\n]\n", NULL);
+  for (int i = 0;
+       i < lines && fscanf(file, "%[^~]~%[^\n]\n", key, value) != EOF; i++) {
     /* Cargar a Redis */
     redis_set(key, value);
   }
 
-  log_(L_INFO | L_CONS, "Carga completa. Total de registros: %ld\n", lines);
+  log_(L_INFO | L_CONS, "Carga completa. Registros cargados: %ld\n", lines);
   redis_close();
+
+  return lines;
+}
+
+bool isDatFile(char const *name) {
+  size_t len = strlen(name);
+  return len > 4 && strcmp(name + len - 4, ".dat") == 0;
 }
 
 void load_data() {
   DIR *d = opendir(dirname);
+  int files_count = 0, total_reg = 0;
+
+  log_(L_INFO | L_CONS, "Directorio de archivos billing: %s\n", dirname);
 
   if (d) {
     struct dirent *dir;
-    while ((dir = readdir(d)) != NULL) {
-      printf("%s\n", dir->d_name);
+
+    for (files_count = 0; (dir = readdir(d)) != NULL; files_count++) {
+      if (isDatFile(dir->d_name)) {
+        char filename[MAXCHAR];
+        strcpy(filename, dirname);
+        strcat(filename, "/");
+        strcat(filename, dir->d_name);
+        FILE *file = fopen(filename, "r");
+
+        if (file != NULL) {
+          total_reg += load_from_file(file, filename);
+
+          fclose(file);
+        } else {
+          log_(L_WARN, "Error al abrir el archivo: %s\n", filename);
+        }
+      }
     }
+
+    log_(L_INFO | L_CONS, "Total de registros cargados: %d\n", total_reg);
+
+    if (files_count == 0) {
+      log_(L_INFO | L_CONS,
+           "Esperando a la creacion de archivos billing (.dat).\n");
+    } else {
+      log_(L_INFO | L_CONS, "Escuchando cambios en el directorio: %s\n",
+           dirname);
+    }
+
     closedir(d);
-  }
-
-  FILE *file = fopen(filename, "r");
-
-  if (file != NULL) {
-    load_from_file(file);
-
-    fclose(file);
-
-    log_(L_INFO | L_CONS, "Escuchando cambios en el archivo: %s\n", filename);
   } else {
-    log_(L_INFO | L_CONS, "Esperando a la creacion del archivo: %s\n",
-         filename);
+    log_(L_INFO | L_CONS, "Esperando a la creacion del directorio: %s\n",
+         dirname);
   }
 
   log_(L_INFO | L_CONS, "...\n");
@@ -208,8 +238,8 @@ void load_data() {
 
 void file_watcher() {
   // Create a FileWatcher instance that will check the current folder for
-  // changes every 5 seconds
-  FileWatcher fw{WORKDIR, std::chrono::milliseconds(1000)};
+  // changes every second
+  FileWatcher fw{dirname, std::chrono::milliseconds(1000)};
 
   // Start monitoring a folder for changes and (in case of changes)
   // run a user provided lambda function
@@ -224,7 +254,7 @@ void file_watcher() {
     switch (status) {
       case FileStatus::created:
       case FileStatus::modified:
-        if (strcmp(path_to_watch.c_str(), filename) == 0) {
+        if (isDatFile(path_to_watch.c_str())) {
           log_(L_INFO | L_CONS, "Archivo creado/modificado: %s\n",
                path_to_watch.c_str());
           load_data();
@@ -259,8 +289,7 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  strcpy(dirname, WORKDIR);
-  strcat(dirname, argv[1]);
+  dirname = argv[1];
   redis_host = argv[2];
   redis_port = atol(argv[3]);
   redis_pass = argv[4];
