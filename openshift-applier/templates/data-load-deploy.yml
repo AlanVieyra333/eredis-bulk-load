@@ -1,0 +1,179 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: "${NAME}"
+  annotations:
+    openshift.io/display-name: App Deploy Template
+    description: A template to deploy your an App
+    iconClass: icon-cube
+    tags: "${NAME}"
+objects:
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    annotations:
+      template.openshift.io/expose-password: "{.data['database-password']}"
+    name: "redis-${NAME}"
+  stringData:
+    database-password: "${REDIS_PASSWORD}"
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    labels:
+      build: "${NAME}"
+    name: "${NAME}"
+  spec: {}
+- kind: BuildConfig
+  apiVersion: build.openshift.io/v1
+  metadata:
+    labels:
+      build: "${NAME}"
+      template: docker-build-template-binary-with-push-secret
+    name: "${NAME}"
+  spec:
+    #failedBuildsHistoryLimit: 5
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "${NAME}:latest"
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        uri: http://telcel.di.sds.oficinarquitectura.prod:7777/EX407665/eredis-bulk-load.git
+      type: Git
+    strategy:
+      dockerStrategy:
+        dockerfilePath: "${DOCKERFILE_NAME}"
+        buildArgs:
+        - name: APP
+          value: "${APP_RUN}"
+      type: Docker
+    #successfulBuildsHistoryLimit: 5
+    triggers:
+    - generic:
+        secret: TELCEL_CARGA_BILLING
+      type: Generic
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: "${NAME}"
+    labels:
+      app: "${NAME}"
+  spec:
+    replicas: 1
+    selector:
+      name: "${NAME}"
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          name: "${NAME}"
+      spec:
+        containers:
+        - image: "${NAME}"
+          env:
+          - name: FILENAME
+            value: "${FILENAME}"
+          - name: REDIS_HOST
+            value: "${REDIS_HOST}"
+          - name: REDIS_PORT
+            value: "${REDIS_PORT}"
+          - name: REDIS_PASS
+            valueFrom:
+              secretKeyRef:
+                key: database-password
+                name: "redis-${NAME}"
+          imagePullPolicy: Always
+          name: "${NAME}"
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1.5Gi"
+            requests:
+              cpu: "${CPU_REQ}"
+              memory: "${MEMORY_REQ}"
+          volumeMounts:
+          - mountPath: /data
+            name: app-pvc
+          terminationMessagePath: "/dev/termination-log"
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: app-pvc
+          persistentVolumeClaim:
+            claimName: "${PVC_NAME}"
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - "${NAME}"
+        from:
+          kind: ImageStreamTag
+          name: "${NAME}:latest"
+      type: ImageChange
+parameters:
+- name: NAME
+  displayName: Name
+  description: The name assigned to all objects and the related imagestream.
+  required: true
+- name: APP_RUN
+  displayName: Application name
+  description: Application in C++ to build and run. (redis_data_load_series, redis_data_load_planes or redis_data_load_billing)
+  required: true
+- name: FILENAME
+  displayName: Filename or dirname
+  description: Filename or dirname from data loading.
+  required: true
+- name: REDIS_HOST
+  displayName: Redis hostname
+  description: Hostname for redis connection.
+  required: true
+- name: REDIS_PORT
+  displayName: Redis port
+  description: Port for redis connection.
+  required: true
+  value: "6379"
+- name: REDIS_PASSWORD
+  displayName: Redis Connection Password
+  description: Password for the Redis connection user.
+  required: true
+- name: PVC_NAME
+  displayName: Persistent Volume Claim
+  description: The name of the PVC.
+  required: true
+- name: DOCKERFILE_NAME
+  displayName: Dockerfile name
+  description: DOCKERFILE_NAME
+  value: "Dockerfile"
+  required: false
+- name: CPU_REQ
+  displayName: CPU request
+  description: CPU request.
+  value: "1"
+  required: false
+- name: MEMORY_REQ
+  displayName: Memory request
+  description: Memory request.
+  value: "1.5Gi"
+  required: false
+labels:
+  template: "${NAME}-template"

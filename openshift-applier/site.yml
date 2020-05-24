@@ -5,7 +5,7 @@
   vars:
     namespace: redis
     project:
-      PROJECT_NAME: carga-redis-series
+      name: perfilador-corporativo
       NAMESPACE: "{{ namespace }}"
       NAMESPACE_DISPLAY_NAME: "Redis"
       NAMESPACE_DESCRIPTION: "Pruebas con redis"

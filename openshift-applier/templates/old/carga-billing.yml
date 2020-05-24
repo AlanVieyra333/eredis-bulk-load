@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: List
+items:
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: carga-redis-billing
+    labels:
+      application: carga-redis-billing
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: carga-redis-billing
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: carga-redis-billing:latest
+    source:
+      git:
+        uri: http://telcel.di.sds.oficinarquitectura.prod:7777/EX407665/eredis-bulk-load.git
+      type: Git
+    strategy:
+      dockerStrategy:
+        dockerfilePath: Dockerfile
+        from:
+          kind: DockerImage
+          name: centos:8
+        buildArgs:
+        - name: APP
+          value: redis_data_load_billing
+      type: Docker
+    triggers:
+    - generic:
+        secret: TELCEL_CARGA_BILLING
+      type: Generic
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: carga-redis-billing
+    name: carga-redis-billing
+  spec:
+    replicas: 1
+    selector:
+      app: carga-redis-billing
+      deploymentconfig: carga-redis-billing
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: carga-redis-billing
+          deploymentconfig: carga-redis-billing
+      spec:
+        containers:
+          - env:
+              - name: FILENAME
+                value: ArchivosBillings
+              - name: REDIS_HOST
+                value: redis-billing
+              - name: REDIS_PORT
+                value: '6379'
+              - name: REDIS_PASS
+                valueFrom:
+                  secretKeyRef:
+                    key: database-password
+                    name: redis-billing
+            image: carga-redis-billing
+            imagePullPolicy: Always
+            name: carga-redis-billing
+            resources:
+              limits:
+                cpu: '200m'
+                memory: 100Mi
+              requests:
+                cpu: '200m'
+                memory: 100Mi
+            volumeMounts:
+              - mountPath: /data
+                name: carga-masiva-data
+        restartPolicy: Always
+        volumes:
+          - name: carga-masiva-data
+            persistentVolumeClaim:
+              claimName: carga-masiva-data
+    triggers:
+      - type: ConfigChange
+      - imageChangeParams:
+          automatic: true
+          containerNames:
+            - carga-redis-billing
+          from:
+            kind: ImageStreamTag
+            name: 'carga-redis-billing:latest'
+        type: ImageChange

@@ -1,12 +1,52 @@
 ---
 ansible_connection: local
 
+redis:
+  deploy:
+    MEMORY_LIMIT: "20Gi"
+    NAMESPACE: "openshift"
+    DATABASE_SERVICE_NAME: "redis-perf-corp"
+    REDIS_PASSWORD: "TeLcEl"
+    REDIS_VERSION: "3.2"
+
+data_load:
+  series:
+    NAME: "carga-redis-series"
+    APP_RUN: "redis_data_load_series"
+    FILENAME: "seriesSiantel081019.txt"
+    REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
+    REDIS_PORT: "6379"
+    REDIS_PASSWORD: "{{ redis.deploy.REDIS_PASSWORD }}"
+    PVC_NAME: "carga-masiva-data"
+    CPU_REQ: "1"
+    MEMORY_REQ: "1.5Gi"
+  planes:
+    NAME: "carga-redis-planes"
+    APP_RUN: "redis_data_load_planes"
+    FILENAME: "Planes.txt"
+    REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
+    REDIS_PORT: "6379"
+    REDIS_PASSWORD: "{{ redis.deploy.REDIS_PASSWORD }}"
+    PVC_NAME: "carga-masiva-data"
+    CPU_REQ: "100m"
+    MEMORY_REQ: "50Mi"
+  billing:
+    NAME: "carga-redis-billing"
+    APP_RUN: "redis_data_load_billing"
+    FILENAME: "ArchivosBillings"
+    REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
+    REDIS_PORT: "6379"
+    REDIS_PASSWORD: "{{ redis.deploy.REDIS_PASSWORD }}"
+    PVC_NAME: "carga-masiva-data"
+    CPU_REQ: "100m"
+    MEMORY_REQ: "200Mi"
+
 # Create new projects with a given short name and display name
 openshift_cluster_content:
 - object: projectrequest
   content:
   - name: "{{ namespace }}"
-    template: "https://raw.githubusercontent.com/redhat-cop/openshift-templates/v1.4.12/project-requests/create-project.yml"
+    template: "{{ openshift_templates_raw }}/{{ openshift_templates_raw_version_tag }}/project-requests/create-project.yml"
     params_from_vars: "{{ project }}"
     action: create
     tags:
@@ -20,34 +60,38 @@ openshift_cluster_content:
 #     tags:
 #       - "{{ namespace }}"
 
+- object: redis
+  content:
+  - name: "redis"
+    template: "{{ inventory_dir }}/../templates/redis.yml"
+    params_from_vars: "{{ redis.deploy }}"
+    namespace: "{{ namespace }}"
+    tags:
+      - "{{ namespace }}"
+
 - object: carga-series
   content:
-  - name: "secrets"
-    file: "{{ inventory_dir }}/../templates/secrets.yml"
-    namespace: "{{ namespace }}"
-    tags:
-      - "{{ namespace }}"
-  - name: "redis-series"
-    file: "{{ inventory_dir }}/../templates/redis.yml"
-    namespace: "{{ namespace }}"
-    tags:
-      - "{{ namespace }}"
-  - name: "process"
-    file: "{{ inventory_dir }}/../templates/carga-series.yml"
+  - name: "app-deploy"
+    template: "{{ inventory_dir }}/../templates/data-load-deploy.yml"
+    params_from_vars: "{{ data_load.series }}"
     namespace: "{{ namespace }}"
     tags:
       - "{{ namespace }}"
 
 - object: carga-planes
   content:
-  - name: "redis"
-    template: "{{ openshift_db_templates_raw }}/{{ openshift_db_templates_raw_version_tag }}/examples/db-templates/redis-ephemeral-template.json"
-    params_from_vars: "{{ redis.deploy.planes }}"
+  - name: "app-deploy"
+    template: "{{ inventory_dir }}/../templates/data-load-deploy.yml"
+    params_from_vars: "{{ data_load.planes }}"
     namespace: "{{ namespace }}"
     tags:
       - "{{ namespace }}"
-  - name: "process"
-    file: "{{ inventory_dir }}/../templates/carga-planes.yml"
+
+- object: carga-billing
+  content:
+  - name: "app-deploy"
+    template: "{{ inventory_dir }}/../templates/data-load-deploy.yml"
+    params_from_vars: "{{ data_load.billing }}"
     namespace: "{{ namespace }}"
     tags:
       - "{{ namespace }}"
