@@ -4,7 +4,8 @@
  * Prueba:
  * Tiempo en cargar 200 millones: 25 min. prox.
  *
- * @date 26/03/2020
+ * @version 1.2 Selecciona base de datos dentro de redis.
+ * @date 22/05/2020
  * @author Alan Fernando Rincón Vieyra <alan.rincon@mail.telcel.com>
  */
 
@@ -21,11 +22,11 @@
 #define MAXCHAR 300
 #define DATA_BLOCK 10000000  // Each DATA_BLOCK reg. reconnect to Redis server.
 #define U_SLEEP 100          // Sleep 10us.
-#define VERSION 1.1
+#define VERSION 1.2
 #define WORKDIR "/data"
 
 char *filename, *redis_host, *redis_pass;
-int redis_port;
+int redis_port, redis_database;
 static eredis_t *e;
 int redis_set_count = 0;
 int redis_cmd_fail = 0;
@@ -87,7 +88,7 @@ int redis_init() {
   eredis_host_add(e, redis_host, redis_port);
   eredis_pc_cmd(e, "AUTH %s", redis_pass);
 
-  if (isConnected()) {
+  if (isConnected() && eredis_w_cmd(e, "SELECT %d", redis_database) == EREDIS_OK) {
     status = 0;
 
     /* run thread */
@@ -245,7 +246,7 @@ int main(int argc, char *argv[]) {
   if (argc != 5) {
     log_(L_WARN,
          "./redis_data_load.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> "
-         "<REDIS_PASS>\n");
+         "<REDIS_PASS> <REDIS_DATABASE?>\n");
     exit(1);
   }
 
@@ -253,6 +254,7 @@ int main(int argc, char *argv[]) {
   redis_host = argv[2];
   redis_port = atol(argv[3]);
   redis_pass = argv[4];
+  redis_database = if (argc >= 6) atoi(argv[5]) : 0;
 
   signal_conf();
 
