@@ -243,7 +243,7 @@ int main(int argc, char *argv[]) {
 
   log_init();
 
-  if (argc != 5) {
+  if (argc < 5) {
     log_(L_WARN,
          "./redis_data_load.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> "
          "<REDIS_PASS> <REDIS_DATABASE?>\n");
