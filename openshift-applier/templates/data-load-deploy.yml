@@ -98,6 +98,8 @@ objects:
               secretKeyRef:
                 key: database-password
                 name: "redis-${NAME}"
+          - name: REDIS_DATABASE
+            value: "${REDIS_DATABASE}"
           imagePullPolicy: Always
           name: "${NAME}"
           resources:
@@ -156,6 +158,11 @@ parameters:
   displayName: Redis Connection Password
   description: Password for the Redis connection user.
   required: true
+- name: REDIS_DATABASE
+  displayName: Redis database
+  description: Redis logical database.
+  required: false
+  value: "0"
 - name: PVC_NAME
   displayName: Persistent Volume Claim
   description: The name of the PVC.
@@ -177,3 +184,4 @@ parameters:
   required: false
 labels:
   template: "${NAME}-template"
+  app: "${NAME}"

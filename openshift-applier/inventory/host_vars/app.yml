@@ -5,9 +5,9 @@ redis:
   deploy:
     MEMORY_LIMIT: "20Gi"
     NAMESPACE: "openshift"
-    DATABASE_SERVICE_NAME: "redis-perf-corp"
+    DATABASE_SERVICE_NAME: "redis-perfil-corp"
     REDIS_PASSWORD: "TeLcEl"
-    REDIS_VERSION: "3.2"
+    REDIS_VERSION: "5"
 
 data_load:
   series:
@@ -17,6 +17,7 @@ data_load:
     REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
     REDIS_PORT: "6379"
     REDIS_PASSWORD: "{{ redis.deploy.REDIS_PASSWORD }}"
+    REDIS_DATABASE: "0"
     PVC_NAME: "carga-masiva-data"
     CPU_REQ: "1"
     MEMORY_REQ: "1.5Gi"
@@ -27,6 +28,7 @@ data_load:
     REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
     REDIS_PORT: "6379"
     REDIS_PASSWORD: "{{ redis.deploy.REDIS_PASSWORD }}"
+    REDIS_DATABASE: "1"
     PVC_NAME: "carga-masiva-data"
     CPU_REQ: "100m"
     MEMORY_REQ: "50Mi"
@@ -37,6 +39,7 @@ data_load:
     REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
     REDIS_PORT: "6379"
     REDIS_PASSWORD: "{{ redis.deploy.REDIS_PASSWORD }}"
+    REDIS_DATABASE: "2"
     PVC_NAME: "carga-masiva-data"
     CPU_REQ: "100m"
     MEMORY_REQ: "200Mi"
