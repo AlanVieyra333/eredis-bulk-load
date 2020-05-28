@@ -26,7 +26,7 @@
 #define WORKDIR "/data"
 
 char *filename, *redis_host, *redis_pass;
-int redis_port, redis_database;
+int redis_port, redis_database = 0;
 static eredis_t *e;
 int redis_set_count = 0;
 int redis_cmd_fail = 0;
@@ -254,7 +254,10 @@ int main(int argc, char *argv[]) {
   redis_host = argv[2];
   redis_port = atol(argv[3]);
   redis_pass = argv[4];
-  redis_database = if (argc >= 6) atoi(argv[5]) : 0;
+
+  if (argc >= 6) {
+    redis_database = atoi(argv[5]);
+  }
 
   signal_conf();
 
