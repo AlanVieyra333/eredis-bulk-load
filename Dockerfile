@@ -21,12 +21,7 @@ WORKDIR /app
 
 ARG APP=redis_data_load_series
 
-ENV FILENAME=filename.txt
-ENV REDIS_HOST=redis
-ENV REDIS_PORT=6379
-ENV REDIS_PASS=changeme
-
-RUN echo -e "#!/bin/bash\n/app/$APP /data/\$FILENAME \$REDIS_HOST \$REDIS_PORT \$REDIS_PASS" > ./entrypoint.sh
+RUN echo -e "#!/bin/bash\n/app/$APP /data/\$FILENAME \$REDIS_HOST \$REDIS_PORT \$REDIS_PASS \$REDIS_DATABASE" > ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 
 RUN mkdir /tmp/src
@@ -43,6 +38,12 @@ RUN cd /tmp/src && \
     rm -R /tmp/src
 
 USER 1001
+
+ENV FILENAME=filename.txt
+ENV REDIS_HOST=redis
+ENV REDIS_PORT=6379
+ENV REDIS_PASS=changeme
+ENV REDIS_DATABASE=0
 
 VOLUME [ "/data" ]
 
