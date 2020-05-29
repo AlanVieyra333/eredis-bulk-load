@@ -3,7 +3,7 @@ ansible_connection: local
 
 redis:
   deploy:
-    MEMORY_LIMIT: "20Gi"
+    MEMORY_LIMIT: "22Gi"
     NAMESPACE: "openshift"
     DATABASE_SERVICE_NAME: "redis-perfil-corp"
     REDIS_PASSWORD: "TeLcEl"

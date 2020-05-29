@@ -21,7 +21,7 @@
 
 #define MAXCHAR 300
 #define DATA_BLOCK 10000000  // Each DATA_BLOCK reg. reconnect to Redis server.
-#define U_SLEEP 100          // Sleep 10us.
+#define U_SLEEP 10           // Sleep 10us.
 #define VERSION 1.7
 #define WORKDIR "/data"
 
@@ -144,7 +144,7 @@ void redis_set(char *key, char *value) {
   }
 
   // Reconnect from redis.
-  if (redis_set_count % 5000000 == 0) {
+  /*if (redis_set_count % 5000000 == 0) {
     redis_close();
 
     if (redis_set_count % 20000000 == 0) {
@@ -152,7 +152,7 @@ void redis_set(char *key, char *value) {
     } else {
       sleep(3);  // Wait 3 sec.
     }
-  }
+  }*/
 }
 
 void load_from_file(FILE *file) {
