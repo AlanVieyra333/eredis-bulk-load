@@ -3,7 +3,7 @@
  * Redis.
  * Prueba:
  * Tiempo en cargar 200 millones: 25 min. prox.
- * 
+ *
  * @version 1.7 Selecciona base de datos dentro de redis.
  * @date 22/05/2020
  * @author Alan Fernando Rincón Vieyra <alan.rincon@mail.telcel.com>
@@ -21,8 +21,8 @@
 
 #define MAXCHAR 300
 #define DATA_BLOCK 10000000  // Each DATA_BLOCK reg. reconnect to Redis server.
-#define U_SLEEP 10           // Sleep 10us.
-#define VERSION 1.7
+#define U_SLEEP 5            // Sleep 5us.
+#define VERSION "1.7.1"
 #define WORKDIR "/data"
 
 char *filename, *redis_host, *redis_pass;
@@ -88,7 +88,8 @@ int redis_init() {
   eredis_host_add(e, redis_host, redis_port);
   eredis_pc_cmd(e, "AUTH %s", redis_pass);
 
-  if (isConnected() && eredis_w_cmd(e, "SELECT %d", redis_database) == EREDIS_OK) {
+  if (isConnected() &&
+      eredis_w_cmd(e, "SELECT %d", redis_database) == EREDIS_OK) {
     status = 0;
 
     /* run thread */
@@ -244,15 +245,16 @@ void log_init() {
 }
 
 int main(int argc, char *argv[]) {
-  fprintf(stderr, "###########################\n");
-  fprintf(stderr, "# Data load - Series v%.1f #\n", VERSION);
-  fprintf(stderr, "###########################\n\n");
+  fprintf(stderr, "#############################\n");
+  fprintf(stderr, "# Data load - Series v%s #\n", VERSION);
+  fprintf(stderr, "#############################\n\n");
 
   log_init();
 
   if (argc < 5) {
     log_(L_WARN,
-         "./redis_data_load.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> <REDIS_PASS> <REDIS_DATABASE?>\n");
+         "./redis_data_load.o <FILE_NAME> <REDIS_HOST> <REDIS_PORT> "
+         "<REDIS_PASS> <REDIS_DATABASE?>\n");
     exit(1);
   }
 
@@ -260,7 +262,7 @@ int main(int argc, char *argv[]) {
   redis_host = argv[2];
   redis_port = atol(argv[3]);
   redis_pass = argv[4];
- 
+
   if (argc >= 6) {
     redis_database = atoi(argv[5]);
   }

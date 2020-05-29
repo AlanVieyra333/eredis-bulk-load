@@ -9,7 +9,7 @@ services:
     image: data-load-series:latest
     container_name: data-load-series
     environment:
-      - FILENAME=seriesSiantel.txt
+      - FILENAME=seriesSiantel081019.txt
       - REDIS_HOST=redis-db
       - REDIS_PORT=6379
       - REDIS_PASS=TeLcEl
