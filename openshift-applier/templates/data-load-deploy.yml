@@ -2,19 +2,19 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: "${NAME}"
+  name: carga-datos
   annotations:
     openshift.io/display-name: App Deploy Template
     description: A template to deploy your an App
     iconClass: icon-cube
-    tags: "${NAME}"
+    tags: carga-datos
 objects:
 - apiVersion: v1
   kind: Secret
   metadata:
     annotations:
       template.openshift.io/expose-password: "{.data['database-password']}"
-    name: "redis-${NAME}"
+    name: "${NAME}-redis"
   stringData:
     database-password: "${REDIS_PASSWORD}"
 - apiVersion: v1
@@ -64,7 +64,7 @@ objects:
   metadata:
     name: "${NAME}"
     labels:
-      app: "${NAME}"
+      name: "${NAME}"
   spec:
     replicas: 1
     selector:
@@ -97,7 +97,7 @@ objects:
             valueFrom:
               secretKeyRef:
                 key: database-password
-                name: "redis-${NAME}"
+                name: "${NAME}-redis"
           - name: REDIS_DATABASE
             value: "${REDIS_DATABASE}"
           imagePullPolicy: Always
@@ -183,5 +183,5 @@ parameters:
   value: "1.5Gi"
   required: false
 labels:
-  template: "${NAME}-template"
-  app: "${NAME}"
+  template: "carga-datos-template"
+  app: carga-datos

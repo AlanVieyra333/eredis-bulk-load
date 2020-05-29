@@ -49,4 +49,4 @@ openshift-applier/roles:
 	cd openshift-applier/ && ansible-galaxy install -r requirements.yml --roles-path=roles
 
 deploy: openshift-applier/roles
-	cd openshift-applier/ && ansible-playbook site.yml
+	cd openshift-applier/ && ansible-playbook -i inventory site.yml
