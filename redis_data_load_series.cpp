@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <omp.h>
 
 #include "FileWatcher.h"
 #include "log.h"
@@ -156,29 +157,58 @@ void redis_set(char *key, char *value) {
   }*/
 }
 
-void load_from_file(FILE *file) {
+int get_lines(FILE *file){
+  char line[MAXCHAR];
+  int lines = 0;
+
+  while (fgets(line, MAXCHAR, file)) lines++;
+
+  return lines;
+}
+
+void load_from_file() {
   long phone_ini, phone_end;
   char key[11];
   char value[MAXCHAR];
+  char line[MAXCHAR];
   int lines;
-  int phone_count;
-
-  if (file == NULL) return;
+  int phone_count = 0;
 
   log_(L_INFO | L_CONS, "Cargando registros de %s...\n", filename);
 
-  // Expansion de registros en el intervalo.
-  for (lines = 0, phone_count = 0;
-       fscanf(file, "%ld|%ld%[^\n]s", &phone_ini, &phone_end, value) != EOF;
-       lines++) {
-    if (phone_end - phone_ini < 10000) {
-      phone_count += phone_end - phone_ini + 1;
+  FILE *file = fopen(filename, "r");
+  if (file == NULL) return;
+  lines = get_lines(file);
+  fclose(file);
 
-      for (long phone = phone_ini; phone <= phone_end; phone++) {
-        sprintf(key, "%ld", phone);
+  // Thread management.
+#pragma omp parallel shared(phone_count) private(e)
+  {
+    int nt = omp_get_num_threads();
+    int iam = omp_get_thread_num();
+    int th_block = lines / nt;
+    int line_ini = th_block * iam;
+    int line_end = iam != nt - 1 ? th_block * (iam + 1) : lines;
 
-        /* Cargar a Redis */
-        redis_set(key, value);
+    FILE *file = fopen(filename, "r");
+
+    for (int curr_line = 0; curr_line < line_ini ; curr_line++) fgets(line, MAXCHAR, file);
+
+    int i = 0;
+    // Expansion de registros en el intervalo.
+    for (i = line_ini; i < line_end; i++) {
+      fscanf(file, "%ld|%ld|%[^\n]s", &phone_ini, &phone_end, value);
+
+      if (phone_end - phone_ini < 10000) {
+#pragma omp critical
+        phone_count += phone_end - phone_ini + 1;
+
+        for (long phone = phone_ini; phone <= phone_end; phone++) {
+          sprintf(key, "%ld", phone);
+
+          /* Cargar a Redis */
+          redis_set(key, value);
+        }
       }
     }
   }
@@ -192,9 +222,9 @@ void load_data() {
   FILE *file = fopen(filename, "r");
 
   if (file != NULL) {
-    load_from_file(file);
-
     fclose(file);
+
+    load_from_file();
 
     log_(L_INFO | L_CONS, "Escuchando cambios en el archivo: %s\n", filename);
   } else {

@@ -1,50 +1,44 @@
 FROM shuppet/eredis:latest as EREDIS
 
-FROM centos:8
+FROM registry.redhat.io/codeready-workspaces/stacks-cpp-rhel8
 LABEL maintainer="Alan Fernando Rincón Vieyra <alan.rincon@mail.telcel.com>"
 
 COPY --from=EREDIS /usr/local/lib/liberedis.so /lib64/
 COPY --from=EREDIS /usr/local/include/eredis.h /usr/local/include/
 COPY --from=EREDIS /usr/local/include/eredis-hiredis.h /usr/local/include/
 
-RUN useradd -u 1001 -r -g 0 -d /opt/app-root/src -s /sbin/nologin \
-      -c "Default Application User" default
+# Install libev library.
+COPY ./yum.repos.d/* /etc/yum.repos.d/
 
-RUN INSTALL_PKGS="libev gcc-c++" && \
-    yum install -y --setopt=tsflags=nodocs --nogpgcheck $INSTALL_PKGS && \
-    rpm -V $INSTALL_PKGS && \
-    yum -y clean all --enablerepo='*'
-
-RUN mkdir /app
-
-WORKDIR /app
-
-ARG APP=redis_data_load_series
-
-RUN echo -e "#!/bin/bash\n/app/$APP /data/\$FILENAME \$REDIS_HOST \$REDIS_PORT \$REDIS_PASS \$REDIS_DATABASE" > ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
-
-RUN mkdir /tmp/src
-
-ADD $APP.cpp /tmp/src/
-ADD FileWatcher.h /tmp/src/
-ADD log.h /tmp/src/
-ADD log.c /tmp/src/
-
-RUN cd /tmp/src && \
-    gcc log.c -o log.o -c && \
-    g++ -std=c++17 -w -Wall -pedantic $APP.cpp log.o -o $APP.o -O2 -lstdc++fs -leredis && \
-    cp ./$APP.o /app/$APP && \
-    rm -R /tmp/src
-
+USER 0
+RUN curl https://www.centos.org/keys/RPM-GPG-KEY-CentOS-Official >/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Official
+RUN yum provides 'libev(x86-32)' 'libev-devel(x86-64)'
+RUN yum install -y libev
 USER 1001
 
+# Environments.
 ENV FILENAME=filename.txt
 ENV REDIS_HOST=redis
 ENV REDIS_PORT=6379
 ENV REDIS_PASS=changeme
 ENV REDIS_DATABASE=0
 
+# Program compilation.
+ARG APP=redis_data_load_series
+
+RUN mkdir /tmp/src
+
+COPY $APP.cpp /tmp/src/
+COPY FileWatcher.h /tmp/src/
+COPY log.h /tmp/src/
+COPY log.c /tmp/src/
+
+RUN cd /tmp/src && \
+    gcc log.c -o log.o -c && \
+    g++ -std=c++17 -w -Wall -pedantic $APP.cpp log.o -o $APP.o -O2 -lstdc++fs -leredis -fopenmp && \
+    cp ./$APP.o /projects/redis_data_load && \
+    rm -R /tmp/src
+
 VOLUME [ "/data" ]
 
-CMD [ "/app/entrypoint.sh" ]
+CMD ["sh", "-c", "/projects/redis_data_load /data/$FILENAME $REDIS_HOST $REDIS_PORT $REDIS_PASS $REDIS_DATABASE"]
