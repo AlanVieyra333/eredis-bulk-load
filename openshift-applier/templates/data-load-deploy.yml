@@ -54,7 +54,7 @@ objects:
     #successfulBuildsHistoryLimit: 5
     triggers:
     - generic:
-        secret: TELCEL_CARGA_BILLING
+        secret: TELCEL_PERFILADOR_CORPORATIVO
       type: Generic
     - type: ConfigChange
     - imageChange: {}
