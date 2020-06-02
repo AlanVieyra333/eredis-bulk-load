@@ -12,6 +12,7 @@ redis:
 data_load:
   series:
     NAME: "carga-redis-series"
+    GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/perfilador-corporativo/carga-datos-redis.git"
     APP_RUN: "redis_data_load_series"
     FILENAME: "seriesSiantel081019.txt"
     REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
@@ -19,10 +20,11 @@ data_load:
     REDIS_PASSWORD: "{{ redis.deploy.REDIS_PASSWORD }}"
     REDIS_DATABASE: "0"
     PVC_NAME: "carga-masiva-data"
-    CPU_REQ: "1"
-    MEMORY_REQ: "1.5Gi"
+    CPU_REQ: "3"
+    MEMORY_REQ: "3Gi"
   planes:
     NAME: "carga-redis-planes"
+    GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/perfilador-corporativo/carga-datos-redis.git"
     APP_RUN: "redis_data_load_planes"
     FILENAME: "Planes.txt"
     REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
@@ -34,6 +36,7 @@ data_load:
     MEMORY_REQ: "50Mi"
   billing:
     NAME: "carga-redis-billing"
+    GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/perfilador-corporativo/carga-datos-redis.git"
     APP_RUN: "redis_data_load_billing"
     FILENAME: "ArchivosBillings"
     REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"

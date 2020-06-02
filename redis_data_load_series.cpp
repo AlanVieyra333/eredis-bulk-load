@@ -32,13 +32,9 @@ static eredis_t *e;
 int redis_set_count = 0;
 int redis_cmd_fail = 0;
 
-struct sigaction old_action;
-
 void sigint_handler(int sig_no) {
-  (void)sig_no;
-
-  log_(L_INFO | L_CONS, "CTRL-C pressed\n");
-  sigaction(SIGINT, &old_action, NULL);
+  log_(L_INFO | L_CONS, "CTRL-C pressed.\n");
+  
   if (e) {
     eredis_shutdown(e);
   }
@@ -46,13 +42,7 @@ void sigint_handler(int sig_no) {
 
 void signal_conf() {
   /* to interrupt */
-  struct sigaction action;
-  memset(&action, 0, sizeof(action));
-  action.sa_handler = &sigint_handler;
-  sigaction(SIGINT, &action, &old_action);
-
-  /* cancel sigpipe */
-  signal(SIGPIPE, SIG_IGN);
+  signal(SIGINT, sigint_handler);
 }
 
 bool isConnected() {
@@ -157,29 +147,30 @@ void redis_set(char *key, char *value) {
   }*/
 }
 
-int get_lines(FILE *file){
-  char line[MAXCHAR];
+int get_lines(char *filename){
   int lines = 0;
+  long phone;
+  char value[MAXCHAR];
 
-  while (fgets(line, MAXCHAR, file)) lines++;
+  FILE *file = fopen(filename, "r");
+  if (file == NULL) return -1;
+
+  while (fscanf(file, "%ld|%[^\n]^\n", &phone, value) != EOF) lines++;
+
+  fclose(file);
 
   return lines;
 }
 
 void load_from_file() {
-  long phone_ini, phone_end;
-  char key[11];
-  char value[MAXCHAR];
-  char line[MAXCHAR];
   int lines;
   int phone_count = 0;
 
   log_(L_INFO | L_CONS, "Cargando registros de %s...\n", filename);
 
-  FILE *file = fopen(filename, "r");
-  if (file == NULL) return;
-  lines = get_lines(file);
-  fclose(file);
+  lines = get_lines(filename);
+
+  //log_(L_DEBUG, "Lineas: %d\n", lines);
 
   // Thread management.
 #pragma omp parallel shared(phone_count) private(e)
@@ -190,9 +181,18 @@ void load_from_file() {
     int line_ini = th_block * iam;
     int line_end = iam != nt - 1 ? th_block * (iam + 1) : lines;
 
+    long phone_ini, phone_end;
+    char key[11];
+    char value[MAXCHAR];
+    char line[MAXCHAR];
+
+    if ( iam == 0 ) log_(L_INFO | L_CONS, "Hilos usados: %d\n", nt);
+
     FILE *file = fopen(filename, "r");
 
     for (int curr_line = 0; curr_line < line_ini ; curr_line++) fgets(line, MAXCHAR, file);
+
+    //log_(L_DEBUG | L_CONS, "%d) Lines: %d - %d\n", iam, line_ini, line_end);
 
     int i = 0;
     // Expansion de registros en el intervalo.
@@ -203,6 +203,8 @@ void load_from_file() {
 #pragma omp critical
         phone_count += phone_end - phone_ini + 1;
 
+        //log_(L_DEBUG | L_CONS, "%d) phones: %ld - %ld\n", iam, phone_ini, phone_end);
+
         for (long phone = phone_ini; phone <= phone_end; phone++) {
           sprintf(key, "%ld", phone);
 
@@ -211,11 +213,16 @@ void load_from_file() {
         }
       }
     }
+
+    fclose(file);
+
+    if (isConnected()) {
+      redis_close();
+    }
   }
 
   log_(L_INFO | L_CONS, "Carga completa. Total de registros: %ld\n",
        phone_count);
-  redis_close();
 }
 
 void load_data() {

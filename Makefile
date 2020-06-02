@@ -1,30 +1,29 @@
 # Test Redis
-# docker build . -t eredis-bulk-load
-# docker-compose up
+# docker-compose up --build
 # docker-compose stop redis-ephemeral
 # redis-cli -h localhost -a TeLcEl GET 5500000000
 
-FILENAME=R09.txt
+APP=redis_data_load_series
+
+FILENAME=seriesSiantel081019.txt
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASS=TeLcEl
+REDIS_DATABASE=0
 
 .PHONY: build run clear generate docker-build deploy
 
-build: redis_data_load_series.o redis_data_load_planes.o ./test/generate_file.o ./test/redis_example.o ./test/read_file.o
+build: ${APP}.o ./test/generate_file.o ./test/redis_example.o ./test/read_file.o
 	@echo "Compilado."
 
-run: redis_data_load_series.o
-	./redis_data_load_series.o ${FILENAME} ${REDIS_HOST} ${REDIS_PORT} ${REDIS_PASS}
+run: ${APP}.o
+	./${APP}.o /data/${FILENAME} ${REDIS_HOST} ${REDIS_PORT} ${REDIS_PASS} ${REDIS_DATABASE}
 
 generate: ./test/generate_file.o
 	./test/generate_file.o 50000000
 
-redis_data_load_series.o: redis_data_load_series.cpp log.o
-	g++ -std=c++17 -w -Wall -pedantic redis_data_load_series.cpp log.o -o redis_data_load_series.o -O2 -lstdc++fs -leredis
-
-redis_data_load_planes.o: redis_data_load_planes.cpp log.o
-	g++ -std=c++17 -w -Wall -pedantic redis_data_load_planes.cpp log.o -o redis_data_load_planes.o -O2 -lstdc++fs -leredis
+${APP}.o: ${APP}.cpp log.o
+	g++ -std=c++17 -w -Wall -pedantic ${APP}.cpp log.o -o ${APP}.o -O2 -lstdc++fs -leredis -fopenmp
 
 log.o: log.c
 	gcc log.c -o log.o -c
@@ -42,7 +41,7 @@ log.o: log.c
 clear:
 	rm -R -f *.o ./test/*.o ./data/log
 
-docker-build: Dockerfile redis_data_load_series.cpp redis_data_load_planes.cpp FileWatcher.h log.h log.c
+docker-build:
 	docker-compose build
 	
 openshift-applier/roles:

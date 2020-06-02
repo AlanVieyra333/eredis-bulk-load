@@ -42,7 +42,7 @@ objects:
     runPolicy: Serial
     source:
       git:
-        uri: http://telcel.di.sds.oficinarquitectura.prod:7777/EX407665/eredis-bulk-load.git
+        uri: "${GIT_REPOSITORY_URL}"
       type: Git
     strategy:
       dockerStrategy:
@@ -104,8 +104,8 @@ objects:
           name: "${NAME}"
           resources:
             limits:
-              cpu: "1"
-              memory: "1.5Gi"
+              cpu: "3"
+              memory: "3Gi"
             requests:
               cpu: "${CPU_REQ}"
               memory: "${MEMORY_REQ}"
@@ -137,6 +137,11 @@ parameters:
   displayName: Name
   description: The name assigned to all objects and the related imagestream.
   required: true
+- name: GIT_REPOSITORY_URL
+  displayName: Git Repository URL
+  description: The URL of the repository with your application source code.
+  required: true
+  value: http://telcel.di.sds.oficinarquitectura.prod:7777/EX407665/eredis-bulk-load.git
 - name: APP_RUN
   displayName: Application name
   description: Application in C++ to build and run. (redis_data_load_series, redis_data_load_planes or redis_data_load_billing)
