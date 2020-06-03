@@ -53,6 +53,10 @@ void redis_set(char *key, char *value, redisContext* ac) {
     log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
   }
 
+  if (redis_set_count % 100000000 == 0) {
+    sleep(40);  // Wait 30 sec.
+  }
+
 }
 
 void read_file() {
