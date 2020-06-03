@@ -103,6 +103,8 @@ objects:
                 name: "${NAME}-redis"
           - name: REDIS_DATABASE
             value: "${REDIS_DATABASE}"
+          - name: OMP_NUM_THREADS
+            value: "${NUM_THREADS}"
           imagePullPolicy: Always
           name: "${NAME}"
           resources:
@@ -198,6 +200,11 @@ parameters:
   displayName: Memory request
   description: Memory request.
   value: "1.5Gi"
+  required: false
+- name: NUM_THREADS
+  displayName: Num threads
+  description: Determines the number of threads, preferably one by each CPU.
+  value: "1"
   required: false
 labels:
   template: "carga-datos-template"

@@ -24,6 +24,7 @@ data_load:
     PVC_NAME: "carga-masiva-data"
     CPU_REQ: "3"
     MEMORY_REQ: "3Gi"
+    NUM_THREADS: "3"
   planes:
     NAME: "carga-redis-planes"
     GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/perfilador-corporativo/carga-datos-redis.git"
