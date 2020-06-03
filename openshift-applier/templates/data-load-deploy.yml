@@ -43,6 +43,7 @@ objects:
     source:
       git:
         uri: "${GIT_REPOSITORY_URL}"
+        ref: "${GIT_REPOSITORY_REF}"
       type: Git
     strategy:
       dockerStrategy:
@@ -142,6 +143,11 @@ parameters:
   description: The URL of the repository with your application source code.
   required: true
   value: http://telcel.di.sds.oficinarquitectura.prod:7777/EX407665/eredis-bulk-load.git
+- name: GIT_REPOSITORY_REF
+  displayName: Git Repository ref
+  description: The ref field to check out a specific Git reference.
+  required: true
+  value: master
 - name: APP_RUN
   displayName: Application name
   description: Application in C++ to build and run. (redis_data_load_series, redis_data_load_planes or redis_data_load_billing)

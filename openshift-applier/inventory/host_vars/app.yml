@@ -13,6 +13,7 @@ data_load:
   series:
     NAME: "carga-redis-series"
     GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/perfilador-corporativo/carga-datos-redis.git"
+    GIT_REPOSITORY_REF: "hiredis-omp"
     APP_RUN: "redis_data_load_series"
     FILENAME: "seriesSiantel081019.txt"
     REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
@@ -25,6 +26,7 @@ data_load:
   planes:
     NAME: "carga-redis-planes"
     GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/perfilador-corporativo/carga-datos-redis.git"
+    GIT_REPOSITORY_REF: "master"
     APP_RUN: "redis_data_load_planes"
     FILENAME: "Planes.txt"
     REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
@@ -37,6 +39,7 @@ data_load:
   billing:
     NAME: "carga-redis-billing"
     GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/perfilador-corporativo/carga-datos-redis.git"
+    GIT_REPOSITORY_REF: "master"
     APP_RUN: "redis_data_load_billing"
     FILENAME: "ArchivosBillings"
     REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
