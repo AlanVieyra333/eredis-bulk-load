@@ -40,7 +40,7 @@ void redis_set(char *key, char *value, redisContext* ac) {
 
   //freeReplyObject(reply);
 
-  if (redis_set_count % 100 == 0) {
+  if (redis_set_count % 200 == 0) {
     /* Let some time to process... normal run... yield a bit... push more
      * write... etc.. */
     while(redisGetReply(ac, (void **) &reply) != 0) {
@@ -54,7 +54,7 @@ void redis_set(char *key, char *value, redisContext* ac) {
   }
 
   if (redis_set_count % 100000000 == 0) {
-    sleep(40);  // Wait 30 sec.
+    sleep(60);  // Wait 30 sec.
   }
 
 }
