@@ -77,6 +77,15 @@ void read_file() {
           /* Cargar a Redis */
           redisAppendCommand(ac, "SET %s %s", key, value);
           //freeReplyObject(reply);
+          
+          if (phone_count % 10000)
+          {
+            while(redisGetReply(ac, (void **) &reply) == REDIS_OK) {
+              // consume message
+              freeReplyObject(reply);
+            }
+          }
+          
         }
       }
     }
