@@ -12,7 +12,7 @@ redis:
 data_load:
   series:
     NAME: "carga-redis-series"
-    GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/alan.rincon/carga-datos-redis.git"
+    GIT_REPOSITORY_URL: "http://gitlab-community-1-zqntn/alan.rincon/carga-datos-redis.git"
     GIT_REPOSITORY_REF: "hiredis-omp"
     GIT_SOURCE_SECRET: "git-ssh"
     APP_RUN: "redis_data_load_series"
@@ -27,7 +27,7 @@ data_load:
     NUM_THREADS: "3"
   planes:
     NAME: "carga-redis-planes"
-    GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/alan.rincon/carga-datos-redis.git"
+    GIT_REPOSITORY_URL: "http://gitlab-community-1-zqntn/alan.rincon/carga-datos-redis.git"
     GIT_REPOSITORY_REF: "master"
     GIT_SOURCE_SECRET: "git-ssh"
     APP_RUN: "redis_data_load_planes"
@@ -41,7 +41,7 @@ data_load:
     MEMORY_REQ: "50Mi"
   billing:
     NAME: "carga-redis-billing"
-    GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/alan.rincon/carga-datos-redis.git"
+    GIT_REPOSITORY_URL: "http://gitlab-community-1-zqntn/alan.rincon/carga-datos-redis.git"
     GIT_REPOSITORY_REF: "master"
     GIT_SOURCE_SECRET: "git-ssh"
     APP_RUN: "redis_data_load_billing"
@@ -67,7 +67,7 @@ openshift_cluster_content:
 
 - object: secrets
   content:
-  - name: "gitlab-os"
+  - name: "gitlab-ssh"
     file: "{{ inventory_dir }}/../templates/secrets/git-ssh-key.yml"
     namespace: "{{ namespace }}"
     tags:
