@@ -30,10 +30,13 @@ int get_lines(const char *filename){
 void redis_set(char *key, char *value, redisContext* ac) {
   redisReply *reply;
   
-  if (redisAppendCommand(ac, "SET %s %s", key, value) != REDIS_OK)
+  if (redisAppendCommand(ac, "SET %s %s", key, value) != REDIS_OK) {
+#pragma omp critical
     ++redis_cmd_fail;
-  else
+  } else {
+#pragma omp critical
     ++redis_set_count;
+  }
 
   //freeReplyObject(reply);
 
@@ -46,7 +49,7 @@ void redis_set(char *key, char *value, redisContext* ac) {
     }
   }
 
-  if (redis_set_count % DATA_BLOCK == 0) {
+  if (redis_set_count % 20 == 0) {
     log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
   }
 
@@ -63,7 +66,7 @@ void read_file() {
   //log_(L_DEBUG, "Lineas: %d\n", lines);
 
   // Thread management.
-#pragma omp parallel shared(phone_count)
+#pragma omp parallel shared(phone_count, redis_cmd_fail, redis_set_count)
   {
     int nt = omp_get_num_threads();
     int iam = omp_get_thread_num();
