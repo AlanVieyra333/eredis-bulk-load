@@ -40,7 +40,7 @@ void redis_set(char *key, char *value, redisContext* ac) {
 
   //freeReplyObject(reply);
 
-  if (redis_set_count % 200 == 0) {
+  if (redis_set_count % 50 == 0) {
     /* Let some time to process... normal run... yield a bit... push more
      * write... etc.. */
     while(redisGetReply(ac, (void **) &reply) != 0) {
