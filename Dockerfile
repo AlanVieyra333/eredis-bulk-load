@@ -8,12 +8,13 @@ COPY --from=EREDIS /usr/local/include/eredis.h /usr/local/include/
 COPY --from=EREDIS /usr/local/include/eredis-hiredis.h /usr/local/include/
 
 # Install libev library.
-COPY ./yum.repos.d/* /etc/yum.repos.d/
+COPY yum.repos.d/*.repo /etc/yum.repos.d/
+COPY yum.repos.d/RPM-GPG-KEY-CentOS-Official /etc/pki/rpm-gpg/
 
 USER 0
-RUN curl https://www.centos.org/keys/RPM-GPG-KEY-CentOS-Official >/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Official
+RUN rm /etc/yum.repos.d/ubi*
 RUN yum provides 'libev(x86-32)' 'libev-devel(x86-64)'
-RUN yum install -y libev
+RUN yum install -y libev-devel
 USER 1001
 
 # Environments.
