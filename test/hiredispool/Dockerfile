@@ -27,4 +27,4 @@ RUN make
 
 VOLUME [ "/data" ]
 
-CMD ["sh", "-c", "/projects/main.o $REDIS_HOST $REDIS_PORT $REDIS_PASS $REDIS_DATABASE /data/$FILENAME"]
+CMD ["sh", "-c", "/projects/main.o $REDIS_HOST $REDIS_PORT $REDIS_PASS $REDIS_DATABASE $FILENAME"]

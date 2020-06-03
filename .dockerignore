@@ -1,4 +1,4 @@
 *.txt
 data/
-test/
 openshift-applier/
+test/

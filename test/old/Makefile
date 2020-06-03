@@ -23,7 +23,7 @@ generate: ./test/generate_file.o
 	./test/generate_file.o 50000000
 
 ${APP}.o: ${APP}.cpp log.o
-	g++ -std=c++17 -w -Wall -pedantic ${APP}.cpp log.o -o ${APP}.o -O2 -lstdc++fs -leredis -fopenmp
+	g++ -std=c++17 -O2 -w -Wall -pedantic ${APP}.cpp log.o -o ${APP}.o -lstdc++fs -leredis -fopenmp
 
 log.o: log.c
 	gcc log.c -o log.o -c
