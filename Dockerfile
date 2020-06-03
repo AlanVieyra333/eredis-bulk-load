@@ -14,7 +14,6 @@ USER 0
 RUN rm /etc/yum.repos.d/ubi*
 RUN yum provides 'libev(x86-32)' 'libev-devel(x86-64)'
 RUN yum install -y libev-devel
-USER 1001
 
 # Environments.
 ENV REDIS_HOST=redis
@@ -24,6 +23,9 @@ ENV REDIS_DATABASE=0
 ENV FILENAME=filename.txt
 
 COPY src/ .
+RUN chown -R 1001:1001 .
+USER 1001
+
 RUN make
 
 VOLUME [ "/data" ]

@@ -37,7 +37,7 @@ void sigint_handler(int sig_no) {
 void signal_init() {
   signal(SIGINT, sigint_handler);
   signal(SIGTERM, sigint_handler);
-  signal(SIGPIPE, SIG_IGN);
+  //signal(SIGPIPE, SIG_IGN);
 }
 
 void log_init(){
