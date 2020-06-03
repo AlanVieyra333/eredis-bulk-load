@@ -53,6 +53,9 @@ objects:
         buildArgs:
         - name: APP
           value: "${APP_RUN}"
+        from:
+          kind: "ImageStreamTag"
+          name: "stacks-cpp-rhel8:latest"
       type: Docker
     #successfulBuildsHistoryLimit: 5
     triggers:
