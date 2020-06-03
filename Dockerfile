@@ -10,7 +10,7 @@ COPY --from=HIREDISPOOL /usr/local/lib/libhiredis.so.0.13 /lib64/libhiredis.so
 COPY ./yum.repos.d/* /etc/yum.repos.d/
 
 USER 0
-RUN curl https://www.centos.org/keys/RPM-GPG-KEY-CentOS-Official >/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Official
+RUN curl http://www.centos.org/keys/RPM-GPG-KEY-CentOS-Official >/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Official
 RUN yum provides 'libev(x86-32)' 'libev-devel(x86-64)'
 RUN yum install -y libev-devel
 USER 1001
