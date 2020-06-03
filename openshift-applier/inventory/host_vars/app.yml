@@ -14,6 +14,7 @@ data_load:
     NAME: "carga-redis-series"
     GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/perfilador-corporativo/carga-datos-redis.git"
     GIT_REPOSITORY_REF: "hiredis-omp"
+    GIT_SOURCE_SECRET: "gitlab-os"
     APP_RUN: "redis_data_load_series"
     FILENAME: "seriesSiantel081019.txt"
     REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
@@ -27,6 +28,7 @@ data_load:
     NAME: "carga-redis-planes"
     GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/perfilador-corporativo/carga-datos-redis.git"
     GIT_REPOSITORY_REF: "master"
+    GIT_SOURCE_SECRET: "gitlab-os"
     APP_RUN: "redis_data_load_planes"
     FILENAME: "Planes.txt"
     REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
@@ -40,6 +42,7 @@ data_load:
     NAME: "carga-redis-billing"
     GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/perfilador-corporativo/carga-datos-redis.git"
     GIT_REPOSITORY_REF: "master"
+    GIT_SOURCE_SECRET: "gitlab-os"
     APP_RUN: "redis_data_load_billing"
     FILENAME: "ArchivosBillings"
     REDIS_HOST: "{{ redis.deploy.DATABASE_SERVICE_NAME }}"
@@ -58,6 +61,14 @@ openshift_cluster_content:
     template: "{{ openshift_templates_raw }}/{{ openshift_templates_raw_version_tag }}/project-requests/create-project.yml"
     params_from_vars: "{{ project }}"
     action: create
+    tags:
+      - "{{ namespace }}"
+
+- object: secrets
+  content:
+  - name: "gitlab"
+    file: "{{ inventory_dir }}/../templates/secrets/gitlab-private-key.yml"
+    namespace: "{{ namespace }}"
     tags:
       - "{{ namespace }}"
 

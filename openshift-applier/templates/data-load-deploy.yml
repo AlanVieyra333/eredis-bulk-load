@@ -45,6 +45,8 @@ objects:
         uri: "${GIT_REPOSITORY_URL}"
         ref: "${GIT_REPOSITORY_REF}"
       type: Git
+      sourceSecret:
+        name: "${GIT_SOURCE_SECRET}"
     strategy:
       dockerStrategy:
         dockerfilePath: "${DOCKERFILE_NAME}"
@@ -148,6 +150,10 @@ parameters:
   description: The ref field to check out a specific Git reference.
   required: true
   value: master
+- name: GIT_SOURCE_SECRET
+  displayName: Secret for git repository
+  description: The name of the OCP secret that has credentials for the pipeline git repository.
+  required: false
 - name: APP_RUN
   displayName: Application name
   description: Application in C++ to build and run. (redis_data_load_series, redis_data_load_planes or redis_data_load_billing)
