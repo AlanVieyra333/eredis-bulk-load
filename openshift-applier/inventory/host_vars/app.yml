@@ -3,7 +3,7 @@ ansible_connection: local
 
 redis:
   deploy:
-    MEMORY_LIMIT: "24G"
+    MEMORY_LIMIT: "23G"
     NAMESPACE: "openshift"
     DATABASE_SERVICE_NAME: "redis-perfil-corp"
     REDIS_PASSWORD: "TeLcEl"
@@ -56,14 +56,14 @@ data_load:
 
 # Create new projects with a given short name and display name
 openshift_cluster_content:
-- object: projectrequest
-  content:
-  - name: "{{ namespace }}"
-    template: "{{ openshift_templates_raw }}/{{ openshift_templates_raw_version_tag }}/project-requests/create-project.yml"
-    params_from_vars: "{{ project }}"
-    action: create
-    tags:
-      - "{{ namespace }}"
+# - object: projectrequest
+#   content:
+#   - name: "{{ namespace }}"
+#     template: "{{ openshift_templates_raw }}/{{ openshift_templates_raw_version_tag }}/project-requests/create-project.yml"
+#     params_from_vars: "{{ project }}"
+#     action: create
+#     tags:
+#       - "{{ namespace }}"
 
 - object: secrets
   content:
