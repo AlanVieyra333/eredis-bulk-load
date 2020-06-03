@@ -40,7 +40,7 @@ void redis_set(char *key, char *value, redisContext* ac) {
 
   //freeReplyObject(reply);
 
-  if (redis_set_count % 10 == 0) {
+  if (redis_set_count % 100 == 0) {
     /* Let some time to process... normal run... yield a bit... push more
      * write... etc.. */
     while(redisGetReply(ac, (void **) &reply) != 0) {
@@ -49,7 +49,7 @@ void redis_set(char *key, char *value, redisContext* ac) {
     }
   }
 
-  if (redis_set_count % 20 == 0) {
+  if (redis_set_count % DATA_BLOCK == 0) {
     log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
   }
 
