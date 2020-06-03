@@ -75,8 +75,8 @@ void read_file() {
           sprintf(key, "%ld", phone);
 
           /* Cargar a Redis */
-          reply = (redisReply *) redisCommand(ac, "SET %s %s", key, value);
-          freeReplyObject(reply);
+          redisAppendCommand(ac, "SET %s %s", key, value);
+          //freeReplyObject(reply);
         }
       }
     }
