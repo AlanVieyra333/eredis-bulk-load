@@ -10,6 +10,7 @@ const char *redis_host;
 int redis_port;
 const char *redis_pass;
 int redis_database;
+int redis_cmd_fail = 0, redis_set_count = 0;
 
 int get_lines(const char *filename){
   int lines = 0;
@@ -24,6 +25,31 @@ int get_lines(const char *filename){
   fclose(file);
 
   return lines;
+}
+
+void redis_set(char *key, char *value, redisContext* ac) {
+  redisReply *reply;
+  
+  if (redisAppendCommand(ac, "SET %s %s", key, value) != REDIS_OK)
+    ++redis_cmd_fail;
+  else
+    ++redis_set_count;
+
+  //freeReplyObject(reply);
+
+  if (redis_set_count % 100 == 0) {
+    /* Let some time to process... normal run... yield a bit... push more
+     * write... etc.. */
+    while(redisGetReply(ac, (void **) &reply) == REDIS_OK) {
+      // consume message
+      freeReplyObject(reply);
+    }
+  }
+
+  if (redis_set_count % DATA_BLOCK == 0) {
+    log_(L_INFO | L_CONS, "Registros cargados: %d\n", redis_set_count);
+  }
+
 }
 
 void read_file() {
@@ -52,7 +78,6 @@ void read_file() {
     char line[MAXCHAR];
 
     redisContext *ac = redis_init(redis_host, redis_port, redis_pass, redis_database);
-    redisReply *reply;
 
     FILE *file = fopen(filename, "r");
 
@@ -75,17 +100,7 @@ void read_file() {
           sprintf(key, "%ld", phone);
 
           /* Cargar a Redis */
-          redisAppendCommand(ac, "SET %s %s", key, value);
-          //freeReplyObject(reply);
-          
-          if (phone_count % 10000)
-          {
-            while(redisGetReply(ac, (void **) &reply) == REDIS_OK) {
-              // consume message
-              freeReplyObject(reply);
-            }
-          }
-          
+          redis_set(key, value, ac);
         }
       }
     }
