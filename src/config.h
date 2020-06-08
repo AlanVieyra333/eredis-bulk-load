@@ -13,11 +13,11 @@
 #include "lib/log.h"
 #include "lib/FileWatcher.h"
 
-#define VERSION "1.8.8"
+#define VERSION "1.8.9"
 #define MAXCHAR 300
 #define WORKDIR "/data"
+#define REDIS_BLOCK 10000
 #define DATA_BLOCK 10000000  // Each DATA_BLOCK reg. reconnect to Redis server.
-#define U_SLEEP 5            // Sleep 5us.
 
 std::vector<redisContext*> c;
 const char* filename;
