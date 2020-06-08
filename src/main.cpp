@@ -40,11 +40,16 @@ void redis_set(char *key, char *value, redisContext *ac,
   if (local_succ_data_load % REDIS_REQ == 0) {
     /* Let some time to process... normal run... yield a bit... push more
      * write... etc.. */
+    redisReply *reply;
     for (int i = 0; i < REDIS_REQ; i++) {
-      if (redisGetReply(ac, NULL) != REDIS_OK) {
+      if (redisGetReply(ac, (void **)&reply) != REDIS_OK) {
         --local_succ_data_load;
         ++local_fail_data_load;
+        // consume message
+        log_(L_WARN | L_CONS, "Error: %s\n", reply->str);
       }
+
+      freeReplyObject(reply);
     }
   }
 
@@ -118,12 +123,14 @@ void read_file() {
     }
 
     // Send last requests.
+    redisReply *reply;
     int last_req = local_succ_data_load % REDIS_REQ;
     for (int i = 0; i < last_req; i++) {
-      if (redisGetReply(ac, NULL) != REDIS_OK) {
+      if (redisGetReply(ac, (void **)&reply) != REDIS_OK) {
         --local_succ_data_load;
         ++local_fail_data_load;
       }
+      freeReplyObject(reply);
     }
 
     fclose(file);
