@@ -66,7 +66,7 @@ void file_check(const char* filename) {
   log_(L_INFO | L_CONS, "...\n");
 }
 
-void file_watcher_init() {
+void file_watcher_start() {
   file_check(filename);
   // Create a FileWatcher instance that will check the current folder for
   // changes every 5 seconds
