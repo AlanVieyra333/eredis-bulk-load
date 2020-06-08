@@ -57,10 +57,10 @@ void redis_set(char *key, char *value, redisContext *ac,
     log_(L_INFO | L_CONS, "[%d] Registros cargados: %d\n", omp_get_thread_num(),
          local_succ_data_load);
   }
-  // TODO
-  // if (local_succ_data_load % 100000000 == 0) {
-  //   sleep(60);  // Wait 30 sec.
-  // }
+
+  if (local_succ_data_load % 100000000 == 0) {
+    sleep(30);  // Wait 30 sec.
+  }
 }
 
 void read_file() {
@@ -135,6 +135,8 @@ void read_file() {
 
     fclose(file);
 
+    log_(L_INFO | L_CONS, "[%d] Carga completa.", omp_get_thread_num());
+
     /* Disconnect redis sock */
     redisFree(ac);
 
@@ -144,7 +146,6 @@ void read_file() {
     fail_data_load += local_fail_data_load;
   }
 
-  log_(L_INFO | L_CONS, "Carga completa.");
   log_(L_INFO | L_CONS, "  Registros totales: %ld", total_data_load);
   log_(L_INFO | L_CONS, "  Registros cargados: %ld", succ_data_load);
   log_(L_INFO | L_CONS, "  Registros fallidos: %ld", fail_data_load);
