@@ -37,10 +37,10 @@ void redis_set(char *key, char *value, redisContext *ac,
 
   ++local_succ_data_load;
 
-  if (local_succ_data_load % REDIS_BLOCK == 0) {
+  if (local_succ_data_load % REDIS_REQ == 0) {
     /* Let some time to process... normal run... yield a bit... push more
      * write... etc.. */
-    for (int i = 0; i < REDIS_BLOCK; i++) {
+    for (int i = 0; i < REDIS_REQ; i++) {
       if (redisGetReply(ac, NULL) != REDIS_OK) {
         --local_succ_data_load;
         ++local_fail_data_load;
@@ -118,7 +118,7 @@ void read_file() {
     }
 
     // Send last requests.
-    int last_req = local_succ_data_load % REDIS_BLOCK;
+    int last_req = local_succ_data_load % REDIS_REQ;
     for (int i = 0; i < last_req; i++) {
       if (redisGetReply(ac, NULL) != REDIS_OK) {
         --local_succ_data_load;
