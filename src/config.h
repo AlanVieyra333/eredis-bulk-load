@@ -16,7 +16,7 @@
 #define VERSION "1.8.9"
 #define MAXCHAR 300
 #define WORKDIR "/data"
-#define REDIS_BLOCK 100
+#define REDIS_BLOCK 400
 #define DATA_BLOCK 10000000  // Each DATA_BLOCK reg. reconnect to Redis server.
 
 std::vector<redisContext*> c;
