@@ -58,7 +58,7 @@ void redis_set(char *key, char *value, redisContext *ac,
          local_succ_data_load);
   }
 
-  if (local_succ_data_load % 100000000 == 0) {
+  if (local_succ_data_load % 30000000 == 0) {
     sleep(30);  // Wait 30 sec.
   }
 }
