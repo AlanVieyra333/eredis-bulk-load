@@ -98,8 +98,7 @@ void file_watcher_start() {
 }
 
 redisContext *redis_init(const char* hostname, int port, const char* password, int database) {
-  struct timeval timeout = { 1, 500000 }; // 1.5 seconds
-  redisContext *c_new = redisConnectWithTimeout(hostname, port, timeout);
+  redisContext *c_new = redisConnect(hostname, port);
   redisReply *reply;
   
   if (c_new == NULL || c_new->err) {
