@@ -27,7 +27,7 @@ int get_lines(const char *filename) {
 
 void redis_set(char *key, char *value, redisContext *ac,
                int &local_succ_data_load, int &local_fail_data_load) {
-  redisReply *reply;
+  // redisReply *reply;
 
   while (redisAppendCommand(ac, "SET %s %s", key, value) != REDIS_OK) {
     log_(L_WARN | L_CONS,
@@ -37,28 +37,29 @@ void redis_set(char *key, char *value, redisContext *ac,
 
   ++local_succ_data_load;
 
-  if (local_succ_data_load % 50 == 0) {
+  redisGetReply(ac, NULL);
+  // if (local_succ_data_load % 50 == 0) {
     /* Let some time to process... normal run... yield a bit... push more
      * write... etc.. */
-    for (int i = 0; i < 50; i++) {
-      if (redisGetReply(ac, (void **)&reply) != REDIS_OK) {
-        --local_succ_data_load;
-        ++local_fail_data_load;
-        // consume message
-        log_(L_WARN | L_CONS, "Error: %s\n", reply->str);
-      }
+    // for (int i = 0; i < 50; i++) {
+    //   if (redisGetReply(ac, (void **)&reply) != REDIS_OK) {
+    //     --local_succ_data_load;
+    //     ++local_fail_data_load;
+    //     // consume message
+    //     log_(L_WARN | L_CONS, "Error: %s\n", reply->str);
+    //   }
 
-      freeReplyObject(reply);
-    }
-  }
+    //   freeReplyObject(reply);
+    // }
+  // }
 
-  if (total_data_load % DATA_BLOCK == 0) {
-    log_(L_INFO | L_CONS, "Registros cargados: %d\n", total_data_load);
+  if (local_succ_data_load % DATA_BLOCK == 0) {
+    log_(L_INFO | L_CONS, "[%d] Registros cargados: %d\n", omp_get_thread_num(), local_succ_data_load);
   }
   // TODO
-  if (total_data_load % 100000000 == 0) {
-    sleep(60);  // Wait 30 sec.
-  }
+  // if (local_succ_data_load % 100000000 == 0) {
+  //   sleep(60);  // Wait 30 sec.
+  // }
 }
 
 void read_file() {
@@ -121,18 +122,18 @@ void read_file() {
     }
     
     // Send last requests.
-    int last_req = local_succ_data_load % 50;
-    redisReply *reply;
-    for (int i = 0; i < last_req; i++) {
-      if (redisGetReply(ac, (void **)&reply) != REDIS_OK) {
-        --local_succ_data_load;
-        ++local_fail_data_load;
-        // consume message
-        log_(L_WARN | L_CONS, "Error: %s\n", reply->str);
-      }
+    // int last_req = local_succ_data_load % 50;
+    // redisReply *reply;
+    // for (int i = 0; i < last_req; i++) {
+    //   if (redisGetReply(ac, (void **)&reply) != REDIS_OK) {
+    //     --local_succ_data_load;
+    //     ++local_fail_data_load;
+    //     // consume message
+    //     log_(L_WARN | L_CONS, "Error: %s\n", reply->str);
+    //   }
 
-      freeReplyObject(reply);
-    }
+    //   freeReplyObject(reply);
+    // }
 
     fclose(file);
 
