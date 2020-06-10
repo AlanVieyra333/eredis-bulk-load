@@ -12,7 +12,7 @@ redis:
 data_load:
   series:
     NAME: "carga-redis-series"
-    GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/alan.rincon/carga-datos-redis.git"
+    GIT_REPOSITORY_URL: "http://git.bus.apps.paas.telcelcloud.dt/perfilador-corporativo/carga-datos-redis.git"
     GIT_REPOSITORY_REF: "hiredis-omp"
     APP_RUN: "redis_data_load_series"
     FILENAME: "seriesSiantel081019.txt"
@@ -21,12 +21,12 @@ data_load:
     REDIS_PASSWORD: "{{ redis.deploy.REDIS_PASSWORD }}"
     REDIS_DATABASE: "0"
     PVC_NAME: "carga-masiva-data"
-    CPU_REQ: "3"
-    MEMORY_REQ: "3Gi"
+    CPU_REQ: "1.5"
+    MEMORY_REQ: "50Mi"
     NUM_THREADS: "3"
   planes:
     NAME: "carga-redis-planes"
-    GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/alan.rincon/carga-datos-redis.git"
+    GIT_REPOSITORY_URL: "http://git.bus.apps.paas.telcelcloud.dt/perfilador-corporativo/carga-datos-redis.git"
     GIT_REPOSITORY_REF: "master"
     APP_RUN: "redis_data_load_planes"
     FILENAME: "Planes.txt"
@@ -39,7 +39,7 @@ data_load:
     MEMORY_REQ: "50Mi"
   billing:
     NAME: "carga-redis-billing"
-    GIT_REPOSITORY_URL: "http://gitlab-community-telcel-ci-cd.apps.paas.telcelcloud.dt/alan.rincon/carga-datos-redis.git"
+    GIT_REPOSITORY_URL: "http://git.bus.apps.paas.telcelcloud.dt/perfilador-corporativo/carga-datos-redis.git"
     GIT_REPOSITORY_REF: "master"
     APP_RUN: "redis_data_load_billing"
     FILENAME: "ArchivosBillings"
