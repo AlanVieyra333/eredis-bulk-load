@@ -112,8 +112,8 @@ objects:
           name: "${NAME}"
           resources:
             limits:
-              cpu: "3"
-              memory: "3Gi"
+              cpu: "1.5"
+              memory: "200Mi"
             requests:
               cpu: "${CPU_REQ}"
               memory: "${MEMORY_REQ}"
