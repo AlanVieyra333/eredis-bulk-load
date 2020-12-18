@@ -28,16 +28,18 @@
 
 char *filename, *redis_host, *redis_pass;
 int redis_port, redis_database = 0;
-static eredis_t *e;
 int redis_set_count = 0;
 int redis_cmd_fail = 0;
 
 void sigint_handler(int sig_no) {
   log_(L_INFO | L_CONS, "CTRL-C pressed.\n");
   
-  if (e) {
-    eredis_shutdown(e);
-  }
+  // if (e) {
+  //   eredis_shutdown(e);
+  // }
+
+  signal(SIGINT, SIG_DFL);
+  kill(getpid(), SIGINT);
 }
 
 void signal_conf() {
@@ -45,21 +47,11 @@ void signal_conf() {
   signal(SIGINT, sigint_handler);
 }
 
-bool isConnected() {
+bool isConnected(eredis_t* &e) {
   bool isConnected = false;
 
   if (e) {
-    eredis_reply_t *reply; /* aka redisReply from hiredis */
-    /* get a reader */
-    eredis_reader_t *reader = eredis_r(e);
-
-    reply = eredis_r_cmd(reader, "PING");
-    // log_(L_INFO | L_CONS, "PING: %s\n", reply->str);
-
-    /* Release the reader */
-    eredis_r_release(reader);
-
-    if (reply != NULL && strcmp(reply->str, "PONG") == 0) {
+    if (eredis_pc_cmd(e, "SELECT %d", redis_database) == EREDIS_OK) {
       // log_(L_INFO | L_CONS, "Conectado al servidor Redis.\n");
 
       isConnected = true;
@@ -69,7 +61,7 @@ bool isConnected() {
   return isConnected;
 }
 
-int redis_init() {
+int redis_init(eredis_t* &e) {
   int status = -1;
 
   /* eredis */
@@ -79,8 +71,7 @@ int redis_init() {
   eredis_host_add(e, redis_host, redis_port);
   eredis_pc_cmd(e, "AUTH %s", redis_pass);
 
-  if (isConnected() &&
-      eredis_w_cmd(e, "SELECT %d", redis_database) == EREDIS_OK) {
+  if (isConnected(e)) {
     status = 0;
 
     /* run thread */
@@ -94,26 +85,29 @@ int redis_init() {
   return status;
 }
 
-void redis_close() {
+void redis_close(eredis_t* &e) {
   if (redis_cmd_fail > 0) {
     log_(L_WARN, "Error con eredis_w_cmd %dx\n", redis_cmd_fail);
   }
 
-  // log_(L_INFO | L_CONS, "Cerrando conexion...\n");
+  log_(L_INFO | L_CONS, "Cerrando conexion... (%d)\n", eredis_w_pending(e));
   /* Let some time to process... normal run... yield a bit... push more write...
    * etc.. */
   while (eredis_w_pending(e) > 0) {
     usleep(1);
   }
 
+  log_(L_DEBUG, "%d) Conexion cerrada.\n", omp_get_thread_num());
+
   eredis_free(e);
   eredis_shutdown(e);
   e = NULL;
 }
 
-void redis_set(char *key, char *value) {
-  if (!e) {
-    while (redis_init() != 0) {
+void redis_set(char *key, char *value, eredis_t* &e) {
+  if (e == NULL) {
+    //log_(L_DEBUG, "%d) Redis Init.\n", omp_get_thread_num());
+    while (redis_init(e) != 0) {
       sleep(10);
     }
   }
@@ -123,7 +117,7 @@ void redis_set(char *key, char *value) {
   else
     ++redis_set_count;
 
-  if (redis_set_count % 10000 == 0) {
+  if (redis_set_count % 10 == 0) {
     /* Let some time to process... normal run... yield a bit... push more
      * write... etc.. */
     while (eredis_w_pending(e) > 0) {
@@ -173,8 +167,9 @@ void load_from_file() {
   //log_(L_DEBUG, "Lineas: %d\n", lines);
 
   // Thread management.
-#pragma omp parallel shared(phone_count) private(e)
+#pragma omp parallel shared(phone_count)
   {
+    static eredis_t *e;
     int nt = omp_get_num_threads();
     int iam = omp_get_thread_num();
     int th_block = lines / nt;
@@ -209,19 +204,20 @@ void load_from_file() {
           sprintf(key, "%ld", phone);
 
           /* Cargar a Redis */
-          redis_set(key, value);
+          redis_set(key, value, e);
         }
       }
     }
 
     fclose(file);
 
-    if (isConnected()) {
-      redis_close();
+    if (isConnected(e)) {
+      log_(L_INFO | L_CONS, "Carga completa.\n");
+      redis_close(e);
     }
   }
 
-  log_(L_INFO | L_CONS, "Carga completa. Total de registros: %ld\n",
+  log_(L_INFO | L_CONS, "Total de registros: %ld\n",
        phone_count);
 }
 

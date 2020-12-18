@@ -13,6 +13,7 @@ services:
       - REDIS_HOST=redis-db
       - REDIS_PORT=6379
       - REDIS_PASS=TeLcEl
+      - OMP_NUM_THREADS=3
     volumes: 
       - type: bind
         source: ./data

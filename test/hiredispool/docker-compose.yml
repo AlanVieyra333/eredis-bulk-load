@@ -1,0 +1,32 @@
+version: "3.3"
+services:
+  hiredispool-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hiredispool-test:latest
+    container_name: hiredispool-test
+    environment:
+      - REDIS_HOST=redis-db
+      - REDIS_PORT=6379
+      - REDIS_PASS=TeLcEl
+      - REDIS_DATABASE=0
+      - FILENAME=seriesSiantel081019.txt
+      - OMP_NUM_THREADS=3
+    networks:
+      - redis-net
+    depends_on:
+      - redis
+  redis:
+    image: registry.redhat.io/rhscl/redis-5-rhel7
+    container_name: redis-ephemeral
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=TeLcEl
+    networks:
+      redis-net:
+        aliases:
+          - redis-db
+networks:
+  redis-net:

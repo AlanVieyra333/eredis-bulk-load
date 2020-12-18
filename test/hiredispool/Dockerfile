@@ -7,13 +7,13 @@ COPY --from=HIREDISPOOL /usr/local/include/hiredis/ /usr/local/include/
 COPY --from=HIREDISPOOL /usr/local/lib/libhiredis.so.0.13 /lib64/libhiredis.so
 
 # Install libev library.
-COPY yum.repos.d/*.repo /etc/yum.repos.d/
-COPY yum.repos.d/RPM-GPG-KEY-CentOS-Official /etc/pki/rpm-gpg/
+COPY ./yum.repos.d/* /etc/yum.repos.d/
 
 USER 0
-RUN rm /etc/yum.repos.d/ubi*
+RUN curl https://www.centos.org/keys/RPM-GPG-KEY-CentOS-Official >/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Official
 RUN yum provides 'libev(x86-32)' 'libev-devel(x86-64)'
 RUN yum install -y libev-devel
+USER 1001
 
 # Environments.
 ENV REDIS_HOST=redis
@@ -23,11 +23,8 @@ ENV REDIS_DATABASE=0
 ENV FILENAME=filename.txt
 
 COPY src/ .
-RUN chown -R 1001:1001 .
-USER 1001
-
 RUN make
 
 VOLUME [ "/data" ]
 
-CMD ["sh", "-c", "/projects/main.o $REDIS_HOST $REDIS_PORT $REDIS_PASS $REDIS_DATABASE /data/$FILENAME"]
+CMD ["sh", "-c", "/projects/main.o $REDIS_HOST $REDIS_PORT $REDIS_PASS $REDIS_DATABASE $FILENAME"]

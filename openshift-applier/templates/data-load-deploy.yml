@@ -43,13 +43,19 @@ objects:
     source:
       git:
         uri: "${GIT_REPOSITORY_URL}"
+        ref: "${GIT_REPOSITORY_REF}"
       type: Git
+      #sourceSecret:
+      #  name: "${GIT_SOURCE_SECRET}"
     strategy:
       dockerStrategy:
         dockerfilePath: "${DOCKERFILE_NAME}"
         buildArgs:
         - name: APP
           value: "${APP_RUN}"
+        from:
+          kind: "ImageStreamTag"
+          name: "stacks-cpp-rhel8:latest"
       type: Docker
     #successfulBuildsHistoryLimit: 5
     triggers:
@@ -100,12 +106,14 @@ objects:
                 name: "${NAME}-redis"
           - name: REDIS_DATABASE
             value: "${REDIS_DATABASE}"
+          - name: OMP_NUM_THREADS
+            value: "${NUM_THREADS}"
           imagePullPolicy: Always
           name: "${NAME}"
           resources:
             limits:
-              cpu: "3"
-              memory: "3Gi"
+              cpu: "1.5"
+              memory: "200Mi"
             requests:
               cpu: "${CPU_REQ}"
               memory: "${MEMORY_REQ}"
@@ -142,6 +150,15 @@ parameters:
   description: The URL of the repository with your application source code.
   required: true
   value: http://telcel.di.sds.oficinarquitectura.prod:7777/EX407665/eredis-bulk-load.git
+- name: GIT_REPOSITORY_REF
+  displayName: Git Repository ref
+  description: The ref field to check out a specific Git reference.
+  required: true
+  value: master
+- name: GIT_SOURCE_SECRET
+  displayName: Secret for git repository
+  description: The name of the OCP secret that has credentials for the pipeline git repository.
+  required: false
 - name: APP_RUN
   displayName: Application name
   description: Application in C++ to build and run. (redis_data_load_series, redis_data_load_planes or redis_data_load_billing)
@@ -186,6 +203,11 @@ parameters:
   displayName: Memory request
   description: Memory request.
   value: "1.5Gi"
+  required: false
+- name: NUM_THREADS
+  displayName: Num threads
+  description: Determines the number of threads, preferably one by each CPU.
+  value: "1"
   required: false
 labels:
   template: "carga-datos-template"
